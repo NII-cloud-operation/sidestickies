@@ -4,7 +4,7 @@ import itertools
 from nbtags.scrapbox import ScrapboxAPI
 
 
-class CellTagsandler(IPythonHandler):
+class CellTagsHandler(IPythonHandler):
     def initialize(self, nb_app):
         self.nb_app = nb_app
 
