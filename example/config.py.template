@@ -1,0 +1,2 @@
+c.ScrapboxAPI.cookie_connect_sid = 'your-secret'
+c.ScrapboxAPI.project_id = 'your-project'

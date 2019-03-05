@@ -11,4 +11,4 @@ def test_get(requests_get):
     sbapi.get('some-meme')
     requests_get.assert_called_with('https://scrapbox.io/api/pages/'
                                     'some_project/some-meme',
-                                    cookie={'connect.sid': 'secret'})
+                                    cookies={'connect.sid': 'secret'})

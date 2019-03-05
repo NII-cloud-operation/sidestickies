@@ -16,7 +16,7 @@ class ScrapboxAPI(LoggingConfigurable):
     def get(self, meme):
         url = self._scrapbox_endpoint('pages/{}/{}'.format(self.project_id,
                                                                meme))
-        resp = requests.get(url, cookie={'connect.sid': self.cookie_connect_sid})
+        resp = requests.get(url, cookies={'connect.sid': self.cookie_connect_sid})
         return resp.json()
 
     def _scrapbox_endpoint(self, api_endpoint):
