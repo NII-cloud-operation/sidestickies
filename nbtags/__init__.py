@@ -25,7 +25,12 @@ def load_jupyter_server_extension(nb_app):
     host_pattern = '.*$'
     c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
                                     r'/nbtags/cell/(?P<meme>[A-Za-z0-9\-]+)')
-
     nb_app.web_app.add_handlers(host_pattern, [
         (c_route_pattern, handler.CellTagsHandler, dict(nb_app=nb_app))
+    ])
+
+    c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
+                                    r'/nbtags/cell')
+    nb_app.web_app.add_handlers(host_pattern, [
+        (c_route_pattern, handler.CellCreateURLHandler, dict(nb_app=nb_app))
     ])

@@ -1,9 +1,12 @@
+from urllib.parse import urlencode, quote_plus
 import requests
 from traitlets import Unicode
 from traitlets.config import LoggingConfigurable
 
 
 class ScrapboxAPI(LoggingConfigurable):
+
+    ENDPOINT_URL = 'https://scrapbox.io/'
 
     cookie_connect_sid = Unicode(help='connect.sid of your cookie') \
                              .tag(config=True)
@@ -19,7 +22,14 @@ class ScrapboxAPI(LoggingConfigurable):
         resp = requests.get(url, cookies={'connect.sid': self.cookie_connect_sid})
         return resp.json()
 
+    def get_view_url(self, title):
+        return self.ENDPOINT_URL + self.project_id + '/' + title
+
+    def get_create_url(self, title, body):
+        return self.get_view_url(title) + \
+               '?' + urlencode({'body': body}, quote_via=quote_plus)
+
     def _scrapbox_endpoint(self, api_endpoint):
         if api_endpoint.startswith('/'):
             api_endpoint = api_endpoint[1:]
-        return 'https://scrapbox.io/api/' + api_endpoint
+        return self.ENDPOINT_URL + 'api/' + api_endpoint
