@@ -18,7 +18,7 @@ define([
     var tags = [];
     var loading = false;
 
-    var loading_interval_ms = 1000 * 5;
+    var loading_interval_ms = 1000 * 2;
 
     function check_content(tag) {
         if (loading) {
@@ -67,21 +67,30 @@ define([
         $.ajax({
             url: url,
             dataType: 'json',
-            async: false,
+            async: true,
             success: function (json) {
                 console.log(self, meme, json);
                 var c = $('.nbtags-tag', self.element);
                 c.empty();
                 if (json['summary']) {
                     var desc = '';
-                    if (json['summary']['description']) {
-                        desc = json['summary']['description'] + ' ';
+                    var summary = json['summary'];
+                    if (summary['description']) {
+                        desc = summary['description'] + ' ';
                     }
                     c.addClass('nbtags-has-page').append($('<a></a>')
                         .append(desc)
                         .append($('<i class="fa fa-external-link"></i>'))
                         .click(function() {
-                                   window.open(json['summary']['page_url']);
+                                   if (! summary['has_code']) {
+                                       var url = Jupyter.notebook.base_url + 'nbtags/cell';
+                                       var curl = url + '?title=' + encodeURIComponent(summary['title']) +
+                                                  '&mode=edit' +
+                                                  '&cell=' + encodeURIComponent(JSON.stringify(self.cell.toJSON()));
+                                       window.open(curl);
+                                   } else {
+                                       window.open(summary['page_url']);
+                                   }
                                }));
                 } else {
                     c.append($('<a><i class="fa fa-plus"></i></a>')
@@ -97,15 +106,8 @@ define([
     Tag.prototype.create = function() {
         var url = Jupyter.notebook.base_url + 'nbtags/cell';
         console.log(this.cell.toJSON());
-        $.ajax({
-            url: url + '?cell=' + encodeURIComponent(JSON.stringify(this.cell.toJSON())),
-            dataType: 'json',
-            async: false,
-            success: function (json) {
-                console.log(json);
-                window.open(json['create_url']);
-            }
-        })
+        var cellurl = url + '?cell=' + encodeURIComponent(JSON.stringify(this.cell.toJSON()));
+        window.open(cellurl);
     };
 
     Tag.prototype.createElement = function() {

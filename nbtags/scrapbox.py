@@ -23,7 +23,7 @@ class ScrapboxAPI(LoggingConfigurable):
         return resp.json()
 
     def get_view_url(self, title):
-        return self.ENDPOINT_URL + self.project_id + '/' + title
+        return self.ENDPOINT_URL + self.project_id + '/' + quote_plus(title)
 
     def get_create_url(self, title, body):
         return self.get_view_url(title) + \

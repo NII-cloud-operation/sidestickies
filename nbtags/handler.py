@@ -31,6 +31,9 @@ class CellTagsHandler(IPythonHandler):
         for item in ['id', 'title', 'updated', 'accessed', 'image',
                      'descriptions']:
             page[item] = links[item]
+        for item in ['lines']:
+            if item in links:
+                page[item] = links[item]
         return page
 
     def get_relates(self, links):
@@ -41,24 +44,27 @@ class CellTagsHandler(IPythonHandler):
         has_page = 1 if page is not None else 0
         count = len(related['1']) + len(related['2']) + has_page
         if page is not None:
-            return {'description': self.summarized_desc(meme, page, count),
-                    'page_url': sbapi.get_view_url(page['title'])}
+            p = page
         elif len(related['1']) > 0:
-            for p in related['1']:
-                d = self.summarized_desc(meme, p, count)
-                if d is not None:
-                    return {'description': d,
-                            'page_url': sbapi.get_view_url(p['title'])}
-            if len(related['2']) > 0:
-                for p in related['2']:
-                    d = self.summarized_desc(meme, p, count)
-                    if d is not None:
-                        return {'description': d,
-                                'page_url': sbapi.get_view_url(p['title'])}
-            return {'description': '',
-                    'page_url': page_url}
+            p = related['1'][0]
+        elif len(related['2']) > 0:
+            p = related['2'][0]
         else:
             return None
+        if 'lines' in p:
+            has_code = len([desc
+                            for desc in p['lines']
+                            if desc['text'].startswith('code:')]) > 0
+        else:
+            self.log.info('No lines(maybe relatedPages): {}'.format(p['title']))
+            details = sbapi.get(p['title'])
+            has_code = len([desc
+                            for desc in details['lines']
+                            if desc['text'].startswith('code:')]) > 0
+        return {'description': self.summarized_desc(meme, p, count),
+                'page_url': sbapi.get_view_url(p['title']),
+                'title': p['title'],
+                'has_code': has_code}
 
     def summarized_desc(self, meme, page, count):
         if len(page['title'].replace(meme, '').strip()) > 0:
@@ -91,12 +97,16 @@ class CellCreateURLHandler(IPythonHandler):
         cell = json.loads(self.get_query_argument('cell'))
         self.log.info('Cell: {}'.format(cell))
         meme = cell['metadata']['lc_cell_meme']['current']
-        tag = '\n\n#{}'.format(meme)
+        if self.get_query_argument('mode', default='new') != 'edit':
+            tag = '\n\n#{}'.format(meme)
+        else:
+            tag = ''
 
         sbapi = ScrapboxAPI(parent=self.nb_app)
-        url = sbapi.get_create_url(meme, self._get_content(cell) + tag)
+        title = self.get_query_argument('title', default=meme)
+        url = sbapi.get_create_url(title, self._get_content(cell) + tag)
 
-        self.finish(dict(create_url=url))
+        self.redirect(url)
 
     def _get_content(self, cell):
         if cell['cell_type'] == 'code':
