@@ -16,24 +16,45 @@ define([
     var options = {};
 
     var tags = [];
-    var loading = false;
+    var loading = 0;
+
+    var loading_interval_ms = 1000 * 2;
+    var refresh_interval_ms = 1000 * 60 * 10;
+
+    function refresh(tag) {
+        console.log('Refresh', tag);
+        $('.nbtags-refresh', tag.element).addClass('fa-spin');
+        tag.checkContent(function() {
+            $('.nbtags-refresh', tag.element).removeClass('fa-spin');
+        });
+    }
 
     function check_content(tag) {
-        if (loading) {
+        $('.nbtags-refresh', tag.element).addClass('fa-spin');
+        if (loading > 0) {
             tags.push(tag);
         } else {
-            loading = true;
-            tag.checkContent(_check_content);
+            loading ++;
+            setTimeout(function() {
+                tag.checkContent(_check_content);
+            }, loading_interval_ms);
         }
     }
 
-    function _check_content() {
-        loading = false;
+    function _check_content(ptag) {
+        loading --;
+        $('.nbtags-refresh', ptag.element).removeClass('fa-spin');
+
+        setTimeout(function() {
+            check_content(ptag);
+        }, refresh_interval_ms);
 
         if (tags.length > 0) {
             var tag = tags.shift();
-            loading = true;
-            tag.checkContent(_check_content);
+            loading ++;
+            setTimeout(function() {
+                tag.checkContent(_check_content);
+            }, loading_interval_ms);
         }
     }
 
@@ -55,24 +76,59 @@ define([
             finished();
             return;
         }
+        console.log('Check content', meme);
         var url = Jupyter.notebook.base_url + 'nbtags/cell/' + meme['current'];
         var self = this;
         $.ajax({
             url: url,
             dataType: 'json',
-            async: false,
             success: function (json) {
                 console.log(self, meme, json);
+                var c = $('.nbtags-tag', self.element);
+                c.empty();
+                c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
+                             .click(function() {
+                                 refresh(self);
+                             }));
                 if (json['summary']) {
-                    var c = $('.nbtags-tag', self.element);
-                    c.empty();
-                    c.append($('<a></a>')
-                        .append(json['summary']['description'])
+                    var desc = '';
+                    var summary = json['summary'];
+                    if (summary['description']) {
+                        desc = summary['description'] + ' ';
+                    }
+                    c.addClass('nbtags-has-page')
+                     .append($('<span></span>')
+                        .append(desc)
+                        .append($('<i class="fa fa-external-link"></i>'))
                         .click(function() {
-                                   window.open(json['summary']['page_url']);
+                                   if (! summary['has_code']) {
+                                       var url = Jupyter.notebook.base_url + 'nbtags/cell';
+                                       var curl = url + '?title=' + encodeURIComponent(summary['title']) +
+                                                  '&mode=edit' +
+                                                  '&cell=' + encodeURIComponent(JSON.stringify(self.cell.toJSON()));
+                                       window.open(curl);
+                                   } else {
+                                       window.open(summary['page_url']);
+                                   }
+                               }));
+                } else {
+                    c.append($('<i class="fa fa-plus"></i>')
+                        .click(function() {
+                                   self.create();
                                }));
                 }
-                finished();
+                finished(self);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error(textStatus, errorThrown);
+                var c = $('.nbtags-tag', self.element);
+                c.empty();
+                c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
+                             .click(function() {
+                                 refresh(self);
+                             }))
+                     .append('<span class="nbtags-error">!</span>');
+                finished(self);
             }
         });
     };
@@ -80,15 +136,8 @@ define([
     Tag.prototype.create = function() {
         var url = Jupyter.notebook.base_url + 'nbtags/cell';
         console.log(this.cell.toJSON());
-        $.ajax({
-            url: url + '?cell=' + encodeURIComponent(JSON.stringify(this.cell.toJSON())),
-            dataType: 'json',
-            async: false,
-            success: function (json) {
-                console.log(json);
-                window.open(json['create_url']);
-            }
-        })
+        var cellurl = url + '?cell=' + encodeURIComponent(JSON.stringify(this.cell.toJSON()));
+        window.open(cellurl);
     };
 
     Tag.prototype.createElement = function() {
@@ -98,9 +147,9 @@ define([
             var self = this;
             content = $('<span></span>')
                           .addClass('nbtags-tag')
-                          .append($('<a><i class="fa fa-plus"></i></a>')
+                          .append($('<i class="fa fa-refresh nbtags-refresh"></i>')
                               .click(function() {
-                                  self.create();
+                                  refresh(self);
                               }));
         } else {
             content = $('<span></span>')

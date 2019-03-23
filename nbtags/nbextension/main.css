@@ -1,16 +1,36 @@
 .nbtags-base {
     position: absolute;
     right: -1em;
+    z-index: 100;
 }
 
 .nbtags-tag {
     padding: 0.5em 1em;
     margin: 1em 0;
+    font-size: 0.8em;
     background: #f4f4f4;
-    border-right: solid 6px #5bb7ae;
+    border-right: solid 6px #ccc;
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.33);
 }
+
+.nbtags-refresh {
+    margin-right: 0.5em;
+}
+
+.nbtags-refresh.fa-spin {
+    color: #999;
+}
+
+.nbtags-has-page {
+  border-right: solid 6px #5bb7ae;
+}
+
 .nbtags-tag p {
     margin: 0;
     padding: 0;
+}
+
+.nbtags-error {
+    color: red;
+    font-weight: bold;
 }
