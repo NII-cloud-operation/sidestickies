@@ -18,12 +18,16 @@ define([
     var tags = [];
     var loading = false;
 
+    var loading_interval_ms = 1000 * 5;
+
     function check_content(tag) {
         if (loading) {
             tags.push(tag);
         } else {
             loading = true;
-            tag.checkContent(_check_content);
+            setTimeout(function() {
+                tag.checkContent(_check_content);
+            }, loading_interval_ms);
         }
     }
 
@@ -33,7 +37,9 @@ define([
         if (tags.length > 0) {
             var tag = tags.shift();
             loading = true;
-            tag.checkContent(_check_content);
+            setTimeout(function() {
+                tag.checkContent(_check_content);
+            }, loading_interval_ms);
         }
     }
 
@@ -55,6 +61,7 @@ define([
             finished();
             return;
         }
+        console.log('Check content', meme);
         var url = Jupyter.notebook.base_url + 'nbtags/cell/' + meme['current'];
         var self = this;
         $.ajax({
@@ -63,13 +70,18 @@ define([
             async: false,
             success: function (json) {
                 console.log(self, meme, json);
+                var c = $('.nbtags-tag', self.element);
+                c.empty();
                 if (json['summary']) {
-                    var c = $('.nbtags-tag', self.element);
-                    c.empty();
                     c.append($('<a></a>')
                         .append(json['summary']['description'])
                         .click(function() {
                                    window.open(json['summary']['page_url']);
+                               }));
+                } else {
+                    c.append($('<a><i class="fa fa-plus"></i></a>')
+                        .click(function() {
+                                   self.create();
                                }));
                 }
                 finished();
@@ -98,10 +110,7 @@ define([
             var self = this;
             content = $('<span></span>')
                           .addClass('nbtags-tag')
-                          .append($('<a><i class="fa fa-plus"></i></a>')
-                              .click(function() {
-                                  self.create();
-                              }));
+                          .append('...');
         } else {
             content = $('<span></span>')
         }

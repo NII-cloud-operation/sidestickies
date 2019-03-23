@@ -9,6 +9,7 @@
     background: #f4f4f4;
     border-right: solid 6px #5bb7ae;
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.33);
+    z-index: 100;
 }
 .nbtags-tag p {
     margin: 0;
