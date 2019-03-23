@@ -98,13 +98,13 @@ class CellCreateURLHandler(IPythonHandler):
         self.log.info('Cell: {}'.format(cell))
         meme = cell['metadata']['lc_cell_meme']['current']
         if self.get_query_argument('mode', default='new') != 'edit':
-            tag = '\n\n#{}'.format(meme)
+            tag = '\n\n#{}\n'.format(meme)
         else:
             tag = ''
 
         sbapi = ScrapboxAPI(parent=self.nb_app)
         title = self.get_query_argument('title', default=meme)
-        url = sbapi.get_create_url(title, self._get_content(cell) + tag)
+        url = sbapi.get_create_url(title, tag + self._get_content(cell))
 
         self.redirect(url)
 
