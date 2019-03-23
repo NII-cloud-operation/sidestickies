@@ -77,7 +77,7 @@ define([
                     if (json['summary']['description']) {
                         desc = json['summary']['description'] + ' ';
                     }
-                    c.append($('<a></a>')
+                    c.addClass('nbtags-has-page').append($('<a></a>')
                         .append(desc)
                         .append($('<i class="fa fa-external-link"></i>'))
                         .click(function() {

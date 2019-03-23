@@ -61,6 +61,9 @@ class CellTagsHandler(IPythonHandler):
             return None
 
     def summarized_desc(self, meme, page, count):
+        if len(page['title'].replace(meme, '').strip()) > 0:
+            desc = page['title'].replace(meme, '').strip()
+            return desc + (' ({})'.format(count) if count > 1 else '')
         desc = page['descriptions']
         code_block = re.compile(r'^\S+')
         while len(desc) > 0 and (desc[0].strip() == '' or
