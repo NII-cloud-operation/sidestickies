@@ -81,10 +81,10 @@ class CellTagsHandler(IPythonHandler):
                     desc = desc[count[0]:]
             desc = desc[1:]
         if len(desc) == 0:
-            return None
+            return 'Empty page' + (' ({})'.format(count) if count > 1 else '')
         desc = desc[0].replace('#' + meme, '').strip()
         if len(desc) == 0:
-            return None
+            return 'Empty page' + (' ({})'.format(count) if count > 1 else '')
         return desc + (' ({})'.format(count) if count > 1 else '')
 
 
