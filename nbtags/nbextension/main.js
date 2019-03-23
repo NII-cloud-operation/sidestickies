@@ -73,8 +73,13 @@ define([
                 var c = $('.nbtags-tag', self.element);
                 c.empty();
                 if (json['summary']) {
+                    var desc = '';
+                    if (json['summary']['description']) {
+                        desc = json['summary']['description'] + ' ';
+                    }
                     c.append($('<a></a>')
-                        .append(json['summary']['description'])
+                        .append(desc)
+                        .append($('<i class="fa fa-external-link"></i>'))
                         .click(function() {
                                    window.open(json['summary']['page_url']);
                                }));

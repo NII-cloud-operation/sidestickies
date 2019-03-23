@@ -38,28 +38,29 @@ class CellTagsHandler(IPythonHandler):
 
     def summarize(self, meme, page, related):
         sbapi = ScrapboxAPI(parent=self.nb_app)
-        page_url = sbapi.get_view_url(meme)
+        has_page = 1 if page is not None else 0
+        count = len(related['1']) + len(related['2']) + has_page
         if page is not None:
-            return {'description': self.summarized_desc(meme, page),
-                    'page_url': page_url}
+            return {'description': self.summarized_desc(meme, page, count),
+                    'page_url': sbapi.get_view_url(page['title'])}
         elif len(related['1']) > 0:
             for p in related['1']:
-                d = self.summarized_desc(meme, p)
+                d = self.summarized_desc(meme, p, count)
                 if d is not None:
                     return {'description': d,
-                            'page_url': page_url}
+                            'page_url': sbapi.get_view_url(p['title'])}
             if len(related['2']) > 0:
                 for p in related['2']:
-                    d = self.summarized_desc(meme, p)
+                    d = self.summarized_desc(meme, p, count)
                     if d is not None:
                         return {'description': d,
-                                'page_url': page_url}
+                                'page_url': sbapi.get_view_url(p['title'])}
             return {'description': '',
                     'page_url': page_url}
         else:
             return None
 
-    def summarized_desc(self, meme, page):
+    def summarized_desc(self, meme, page, count):
         desc = page['descriptions']
         code_block = re.compile(r'^\S+')
         while len(desc) > 0 and (desc[0].strip() == '' or
@@ -75,7 +76,7 @@ class CellTagsHandler(IPythonHandler):
         desc = desc[0].replace('#' + meme, '').strip()
         if len(desc) == 0:
             return None
-        return desc
+        return desc + (' ({})'.format(count) if count > 1 else '')
 
 
 class CellCreateURLHandler(IPythonHandler):
