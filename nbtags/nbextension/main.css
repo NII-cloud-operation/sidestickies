@@ -18,7 +18,7 @@
 }
 
 .nbtags-refresh.fa-spin {
-    color: #999;
+    color: #bbb;
 }
 
 .nbtags-has-page {
@@ -28,6 +28,14 @@
 .nbtags-tag p {
     margin: 0;
     padding: 0;
+}
+
+.nbtags-tag * {
+    color: #999;
+}
+
+.nbtags-has-page * {
+    color: #222;
 }
 
 .nbtags-error {
