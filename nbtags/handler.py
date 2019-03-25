@@ -54,7 +54,7 @@ class CellTagsHandler(IPythonHandler):
         if 'lines' in p:
             has_code = len([desc
                             for desc in p['lines']
-                            if desc['text'].startswith('code:')]) > 0
+                            if desc['text'].startswith('code:cell.')]) > 0
         else:
             self.log.info('No lines(maybe relatedPages): {}'.format(p['title']))
             details = sbapi.get(p['title'])
@@ -109,13 +109,15 @@ class CellCreateURLHandler(IPythonHandler):
         self.redirect(url)
 
     def _get_content(self, cell):
+        sbapi = ScrapboxAPI(parent=self.nb_app)
         if cell['cell_type'] == 'code':
             lines = cell['source'].split('\n')
-            code = 'code:cell.py\n' + '\n'.join(['  ' + l for l in lines])
+            code = 'code:' + sbapi.cell_filename + '\n' + \
+                   '\n'.join(['  ' + l for l in lines])
             return code + '\n'
         elif cell['cell_type'] == 'markdown':
             lines = cell['source'].split('\n')
-            code = 'code:cell.py\n' + '\n'.join(['  ' + l for l in lines])
+            code = 'code:cell.md\n' + '\n'.join(['  ' + l for l in lines])
             return code + '\n'
         else:
             return ''
