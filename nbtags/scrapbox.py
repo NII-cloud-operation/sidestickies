@@ -13,6 +13,9 @@ class ScrapboxAPI(LoggingConfigurable):
 
     project_id = Unicode(help='project ID of your project').tag(config=True)
 
+    cell_filename = Unicode(help='filename of code area',
+                            default_value='cell.py').tag(config=True)
+
     def __init__(self, **kwargs):
         super(ScrapboxAPI, self).__init__(**kwargs)
 
