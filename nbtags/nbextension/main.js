@@ -99,7 +99,8 @@ define([
                     c.addClass('nbtags-has-page')
                      .append($('<span></span>')
                         .append(desc)
-                        .append($('<i class="fa fa-external-link"></i>'))
+                        .append($('<i class="fa fa-comments"></i>'))
+                        .append(summary['count'])
                         .click(function() {
                                    if (! summary['has_code']) {
                                        var url = Jupyter.notebook.base_url + 'nbtags/cell';
@@ -112,7 +113,7 @@ define([
                                    }
                                }));
                 } else {
-                    c.append($('<i class="fa fa-plus"></i>')
+                    c.append($('<i class="fa fa-comment"></i>')
                         .click(function() {
                                    self.create();
                                }));

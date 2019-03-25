@@ -61,15 +61,15 @@ class CellTagsHandler(IPythonHandler):
             has_code = len([desc
                             for desc in details['lines']
                             if desc['text'].startswith('code:')]) > 0
-        return {'description': self.summarized_desc(meme, p, count),
+        return {'description': self.summarized_desc(meme, p),
                 'page_url': sbapi.get_view_url(p['title']),
                 'title': p['title'],
-                'has_code': has_code}
+                'has_code': has_code,
+                'count': '{}'.format(count)}
 
-    def summarized_desc(self, meme, page, count):
+    def summarized_desc(self, meme, page):
         if len(page['title'].replace(meme, '').strip()) > 0:
-            desc = page['title'].replace(meme, '').strip()
-            return desc + (' ({})'.format(count) if count > 1 else '')
+            return page['title'].replace(meme, '').strip()
         desc = page['descriptions']
         code_block = re.compile(r'^\S+')
         while len(desc) > 0 and (desc[0].strip() == '' or
@@ -81,11 +81,8 @@ class CellTagsHandler(IPythonHandler):
                     desc = desc[count[0]:]
             desc = desc[1:]
         if len(desc) == 0:
-            return 'Empty page' + (' ({})'.format(count) if count > 1 else '')
-        desc = desc[0].replace('#' + meme, '').strip()
-        if len(desc) == 0:
-            return 'Empty page' + (' ({})'.format(count) if count > 1 else '')
-        return desc + (' ({})'.format(count) if count > 1 else '')
+            return ''
+        return desc[0].replace('#' + meme, '').strip()
 
 
 class CellCreateURLHandler(IPythonHandler):
