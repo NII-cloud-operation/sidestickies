@@ -5,11 +5,17 @@ from . import handler
 
 # nbextension
 def _jupyter_nbextension_paths():
-    return [dict(
+    notebook_ext = dict(
         section='notebook',
         src='nbextension',
         dest='nbtags',
-        require='nbtags/main')]
+        require='nbtags/main')
+    tree_ext = dict(
+        section='tree',
+        src='nbextension',
+        dest='nbtags',
+        require='nbtags/tree')
+    return [notebook_ext, tree_ext]
 
 
 # server extension
