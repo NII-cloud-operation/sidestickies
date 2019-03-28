@@ -118,3 +118,21 @@ class CellCreateURLHandler(IPythonHandler):
             return code + '\n'
         else:
             return ''
+
+
+class NotebookMemeHandler(IPythonHandler):
+    def initialize(self, nb_app):
+        self.nb_app = nb_app
+
+    @web.authenticated
+    def get(self, path):
+        contents_manager = self.nb_app.contents_manager
+        file_object = contents_manager.get(path, content=True)
+        assert file_object['format'] == 'json'
+        metadata = file_object['content']['metadata']
+        if 'lc_notebook_meme' in metadata:
+            meme = metadata['lc_notebook_meme']['current']
+        else:
+            meme = None
+
+        self.finish(dict(meme=meme, path=path))

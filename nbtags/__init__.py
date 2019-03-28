@@ -34,3 +34,9 @@ def load_jupyter_server_extension(nb_app):
     nb_app.web_app.add_handlers(host_pattern, [
         (c_route_pattern, handler.CellCreateURLHandler, dict(nb_app=nb_app))
     ])
+
+    c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
+                                    r'/nbtags/notebook/(.+\.ipynb)/meme')
+    nb_app.web_app.add_handlers(host_pattern, [
+        (c_route_pattern, handler.NotebookMemeHandler, dict(nb_app=nb_app))
+    ])
