@@ -13,6 +13,7 @@ define([
 
     var loading_interval_ms = 1000 * 2;
     var refresh_interval_ms = 1000 * 60 * 10;
+    var max_content_length = 1024;
 
     function refresh(tag) {
         console.log(log_prefix, 'Refresh', tag);
@@ -49,6 +50,24 @@ define([
                 tag.checkContent(_check_content);
             }, loading_interval_ms);
         }
+    }
+
+    function _normalize_toc(toc) {
+        var ntoc = [];
+        var ntoclen = 0;
+        var exceed = false;
+        toc.forEach(function(line) {
+            if (ntoclen + line.length >= max_content_length - 2) {
+                exceed = true;
+                return;
+            }
+            ntoc.push(line);
+            ntoclen += line.length;
+        });
+        if (exceed) {
+            ntoc.push('..');
+        }
+        return ntoc;
     }
 
     function Tag(cell) {
@@ -175,8 +194,8 @@ define([
         var content = {};
         content['cell_type'] = cell['cell_type'];
         content['metadata'] = {'lc_cell_meme': cell['metadata']['lc_cell_meme']};
-        content['source'] = cell['source'].length < 100 ?
-                            cell['source'] : cell['source'].substring(0, 98) + '..';
+        content['source'] = cell['source'].length < max_content_length ?
+                            cell['source'] : cell['source'].substring(0, max_content_length - 2) + '..';
         console.log(log_prefix, 'Content', content)
         handler(JSON.stringify(content));
     };
@@ -225,7 +244,7 @@ define([
                 console.log(log_prefix, self, json);
 
                 handler(JSON.stringify({'meme': json['meme'],
-                                        'toc': json['toc']}));
+                                        'toc': _normalize_toc(json['toc'])}));
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error(log_prefix, textStatus, errorThrown);
@@ -239,9 +258,44 @@ define([
         return utils.get_body_data('baseUrl') + 'nbtags/notebook';
     };
 
+    function NotebookPageTag(notebook) {
+        Tag.call(this);
+        this.notebook = notebook;
+        this.query = 'notebook';
+    }
+
+    NotebookPageTag.prototype = Object.create(Tag.prototype);
+
+    Object.defineProperty(NotebookPageTag.prototype, 'constructor',
+                          {value: NotebookPageTag, enumerable: false, writable: true});
+
+    NotebookPageTag.prototype.getMEME = function(handler) {
+        handler(this.notebook.metadata['lc_notebook_meme']);
+    };
+
+    NotebookPageTag.prototype.getContent = function(handler) {
+        var meme = this.notebook.metadata['lc_notebook_meme'];
+        var toc = [];
+        this.notebook.get_cells().forEach(function(cell) {
+            var celljson = cell.toJSON();
+            if (celljson['cell_type'] == 'markdown') {
+                if (/^\#+/.test(celljson['source'])) {
+                    toc.push(celljson['source'].split('\n')[0]);
+                }
+            }
+        });
+        console.log(log_prefix, 'TOC', toc);
+        handler(JSON.stringify({'meme': meme, 'toc': _normalize_toc(toc)}));
+    };
+
+    NotebookPageTag.prototype.getBaseURL = function() {
+        return Jupyter.notebook.base_url + 'nbtags/notebook';
+    };
+
     return {
         CellTag: CellTag,
         NotebookTag: NotebookTag,
+        NotebookPageTag: NotebookPageTag,
         check_content: check_content
     };
 });

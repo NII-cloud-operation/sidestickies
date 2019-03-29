@@ -22,6 +22,14 @@ define([
         });
     }
 
+    function attach_notebook_tag() {
+        var t = new tagging.NotebookPageTag(Jupyter.notebook);
+        t.createElement(function(child) {
+            $('#notebook').append(child.addClass('nbtags-notebook-base'));
+            tagging.check_content(t);
+        });
+    }
+
     function extend_cell(cell) {
         var t = new tagging.CellTag(cell);
         t.createElement(function(child) {
@@ -57,6 +65,8 @@ define([
         * execute this extension on load
         */
         var on_notebook_loaded = function() {
+            attach_notebook_tag();
+
             Jupyter.notebook.get_cells().forEach(function(cell, index, array) {
                 extend_cell(cell);
             });
