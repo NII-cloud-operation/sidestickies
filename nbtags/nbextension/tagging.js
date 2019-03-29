@@ -72,7 +72,52 @@ define([
 
     function Tag(cell) {
         this.cell = cell;
+        this.cachedJSON = null;
     }
+
+    Tag.prototype.updateContent = function(json) {
+        var self = this;
+        var c = $('.nbtags-tag', self.element);
+        c.empty();
+        c.append($('<span class="item_name"><i class="fa fa-refresh nbtags-refresh"></i></span>')
+                     .click(function(event) {
+                         refresh(self);
+                         event.stopPropagation();
+                     }));
+        if (json['summary']) {
+            var desc = '';
+            var summary = json['summary'];
+            if (summary['description']) {
+                desc = summary['description'] + ' ';
+            }
+            c.addClass('nbtags-has-page')
+             .append($('<span class="item_name"></span>')
+                .append(desc)
+                .append($('<i class="fa fa-comments"></i>'))
+                .append(summary['count'])
+                .click(function(event) {
+                           if (! summary['has_code']) {
+                               var url = self.getBaseURL();
+                               self.getContent(function(content) {
+                                   var curl = url + '?title=' + encodeURIComponent(summary['title']) +
+                                              '&mode=edit' +
+                                              '&' + self.query +
+                                              '=' + encodeURIComponent(content);
+                                   window.open(curl);
+                               });
+                           } else {
+                               window.open(summary['page_url']);
+                           }
+                           event.stopPropagation();
+                       }));
+        } else {
+            c.append($('<span class="item_name"><i class="fa fa-comment"></i></span>')
+                .click(function(event) {
+                           self.create();
+                           event.stopPropagation();
+                       }));
+        }
+    };
 
     Tag.prototype.checkContent = function(finished) {
         var self = this;
@@ -88,52 +133,18 @@ define([
                 dataType: 'json',
                 success: function (json) {
                     console.log(log_prefix, self, meme, json);
-                    var c = $('.nbtags-tag', self.element);
-                    c.empty();
-                    c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
-                                 .click(function() {
-                                     refresh(self);
-                                 }));
-                    if (json['summary']) {
-                        var desc = '';
-                        var summary = json['summary'];
-                        if (summary['description']) {
-                            desc = summary['description'] + ' ';
-                        }
-                        c.addClass('nbtags-has-page')
-                         .append($('<span></span>')
-                            .append(desc)
-                            .append($('<i class="fa fa-comments"></i>'))
-                            .append(summary['count'])
-                            .click(function() {
-                                       if (! summary['has_code']) {
-                                           var url = self.getBaseURL();
-                                           self.getContent(function(content) {
-                                               var curl = url + '?title=' + encodeURIComponent(summary['title']) +
-                                                          '&mode=edit' +
-                                                          '&' + self.query +
-                                                          '=' + encodeURIComponent(content);
-                                               window.open(curl);
-                                           });
-                                       } else {
-                                           window.open(summary['page_url']);
-                                       }
-                                   }));
-                    } else {
-                        c.append($('<i class="fa fa-comment"></i>')
-                            .click(function() {
-                                       self.create();
-                                   }));
-                    }
+                    self.cachedJSON = json;
+                    self.updateContent(json);
                     finished(self);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     console.error(log_prefix, textStatus, errorThrown);
                     var c = $('.nbtags-tag', self.element);
                     c.empty();
-                    c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
-                                 .click(function() {
+                    c.append($('<span class="item_name"><i class="fa fa-refresh nbtags-refresh"></i></span>')
+                                 .click(function(event) {
                                      refresh(self);
+                                     event.stopPropagation();
                                  }))
                          .append('<span class="nbtags-error">!</span>');
                     finished(self);
@@ -159,9 +170,10 @@ define([
             if (meme) {
                 content = $('<span></span>')
                               .addClass('nbtags-tag')
-                              .append($('<i class="fa fa-refresh nbtags-refresh"></i>')
-                                  .click(function() {
+                              .append($('<span class="item_name"><i class="fa fa-refresh nbtags-refresh"></i></span>')
+                                  .click(function(event) {
                                       refresh(self);
+                                      event.stopPropagation();
                                   }));
             } else {
                 content = $('<span></span>')
