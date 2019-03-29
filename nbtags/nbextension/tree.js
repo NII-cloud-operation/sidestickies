@@ -44,8 +44,16 @@ define([
         });
         if (cached.length > 0) {
             console.log(log_prefix, 'Reusing', contentPath, itemName);
-            tags.push(cached[0]);
-            item.find('.col-md-12').append(cached[0].element);
+            var t = cached[0];
+            tags.push(t);
+            t.createElement(function(child) {
+                item.find('.col-md-12').append(child);
+                if (t.cachedJSON) {
+                    t.updateContent(t.cachedJSON);
+                } else {
+                    tagging.check_content(t);
+                }
+            });
         } else {
             console.log(log_prefix, 'Creating', contentPath, itemName);
             var t = new tagging.NotebookTag(contentPath);
