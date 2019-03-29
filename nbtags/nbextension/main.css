@@ -27,7 +27,11 @@
 }
 
 .nbtags-has-page {
-  border-right: solid 6px #5bb7ae;
+    border-right: solid 6px #5bb7ae;
+}
+
+.list_item .nbtags-has-page {
+    border-right: solid 6px #4169e1;
 }
 
 .nbtags-tag p {
