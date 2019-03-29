@@ -1,7 +1,8 @@
 define([
     'base/js/namespace',
-    'jquery'
-], function(Jupyter, $) {
+    'jquery',
+    'base/js/utils'
+], function(Jupyter, $, utils) {
     "use strict";
 
     var mod_name = 'NBTags';
@@ -55,98 +56,185 @@ define([
     }
 
     Tag.prototype.checkContent = function(finished) {
-        var meme = this.cell.metadata['lc_cell_meme'];
-        if (!meme) {
-            finished(this);
-            return;
-        }
-        console.log('Check content', meme);
-        var url = Jupyter.notebook.base_url + 'nbtags/cell/' + meme['current'];
+        var self = this;
+        this.getMEME(function(meme) {
+            if (!meme) {
+                finished(self);
+                return;
+            }
+            console.log('Check content', meme);
+            var url = self.getBaseURL() + '/' + meme['current'];
+            $.ajax({
+                url: url,
+                dataType: 'json',
+                success: function (json) {
+                    console.log(self, meme, json);
+                    var c = $('.nbtags-tag', self.element);
+                    c.empty();
+                    c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
+                                 .click(function() {
+                                     refresh(self);
+                                 }));
+                    if (json['summary']) {
+                        var desc = '';
+                        var summary = json['summary'];
+                        if (summary['description']) {
+                            desc = summary['description'] + ' ';
+                        }
+                        c.addClass('nbtags-has-page')
+                         .append($('<span></span>')
+                            .append(desc)
+                            .append($('<i class="fa fa-comments"></i>'))
+                            .append(summary['count'])
+                            .click(function() {
+                                       if (! summary['has_code']) {
+                                           var url = self.getBaseURL();
+                                           self.getContent(function(content) {
+                                               var curl = url + '?title=' + encodeURIComponent(summary['title']) +
+                                                          '&mode=edit' +
+                                                          '&' + self.query +
+                                                          '=' + encodeURIComponent(content);
+                                               window.open(curl);
+                                           });
+                                       } else {
+                                           window.open(summary['page_url']);
+                                       }
+                                   }));
+                    } else {
+                        c.append($('<i class="fa fa-comment"></i>')
+                            .click(function() {
+                                       self.create();
+                                   }));
+                    }
+                    finished(self);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error(textStatus, errorThrown);
+                    var c = $('.nbtags-tag', self.element);
+                    c.empty();
+                    c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
+                                 .click(function() {
+                                     refresh(self);
+                                 }))
+                         .append('<span class="nbtags-error">!</span>');
+                    finished(self);
+                }
+            });
+        });
+    };
+
+    Tag.prototype.create = function() {
+        var url = this.getBaseURL();
+        var self = this;
+        this.getContent(function(content) {
+            console.log(content);
+            var cellurl = url + '?' + self.query + '=' + encodeURIComponent(content);
+            window.open(cellurl);
+        });
+    };
+
+    Tag.prototype.createElement = function(created) {
+        var self = this;
+        this.getMEME(function(meme) {
+            var content;
+            if (meme) {
+                content = $('<span></span>')
+                              .addClass('nbtags-tag')
+                              .append($('<i class="fa fa-refresh nbtags-refresh"></i>')
+                                  .click(function() {
+                                      refresh(self);
+                                  }));
+            } else {
+                content = $('<span></span>')
+            }
+            self.element = $('<div></div>')
+                               .addClass('nbtags-base')
+                               .append(content);
+            created(self.element);
+        });
+    };
+
+    function CellTag(cell) {
+        Tag.call(this);
+
+        this.cell = cell;
+        this.query = 'cell'
+    }
+
+    CellTag.prototype = Object.create(Tag.prototype);
+
+    Object.defineProperty(CellTag.prototype, 'constructor',
+                          {value: CellTag, enumerable: false, writable: true});
+
+    CellTag.prototype.getMEME = function(handler) {
+        handler(this.cell.metadata['lc_cell_meme']);
+    };
+
+    CellTag.prototype.getContent = function(handler) {
+        handler(JSON.stringify(this.cell.toJSON()));
+    };
+
+    CellTag.prototype.getBaseURL = function() {
+        return Jupyter.notebook.base_url + 'nbtags/cell';
+    };
+
+    function NotebookTag(path) {
+        Tag.call(this);
+        this.path = path;
+        this.query = 'notebook';
+    }
+
+    NotebookTag.prototype = Object.create(Tag.prototype);
+
+    Object.defineProperty(NotebookTag.prototype, 'constructor',
+                          {value: NotebookTag, enumerable: false, writable: true});
+
+    NotebookTag.prototype.getMEME = function(handler) {
+        var url = this.getBaseURL() + this.path + '/meme';
         var self = this;
         $.ajax({
             url: url,
             dataType: 'json',
             success: function (json) {
-                console.log(self, meme, json);
-                var c = $('.nbtags-tag', self.element);
-                c.empty();
-                c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
-                             .click(function() {
-                                 refresh(self);
-                             }));
-                if (json['summary']) {
-                    var desc = '';
-                    var summary = json['summary'];
-                    if (summary['description']) {
-                        desc = summary['description'] + ' ';
-                    }
-                    c.addClass('nbtags-has-page')
-                     .append($('<span></span>')
-                        .append(desc)
-                        .append($('<i class="fa fa-comments"></i>'))
-                        .append(summary['count'])
-                        .click(function() {
-                                   if (! summary['has_code']) {
-                                       var url = Jupyter.notebook.base_url + 'nbtags/cell';
-                                       var curl = url + '?title=' + encodeURIComponent(summary['title']) +
-                                                  '&mode=edit' +
-                                                  '&cell=' + encodeURIComponent(JSON.stringify(self.cell.toJSON()));
-                                       window.open(curl);
-                                   } else {
-                                       window.open(summary['page_url']);
-                                   }
-                               }));
-                } else {
-                    c.append($('<i class="fa fa-comment"></i>')
-                        .click(function() {
-                                   self.create();
-                               }));
-                }
-                finished(self);
+                console.log(self, json);
+
+                handler(json['meme']);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error(textStatus, errorThrown);
-                var c = $('.nbtags-tag', self.element);
-                c.empty();
-                c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
-                             .click(function() {
-                                 refresh(self);
-                             }))
-                     .append('<span class="nbtags-error">!</span>');
-                finished(self);
+
+                handler(undefined);
             }
         });
     };
 
-    Tag.prototype.create = function() {
-        var url = Jupyter.notebook.base_url + 'nbtags/cell';
-        console.log(this.cell.toJSON());
-        var cellurl = url + '?cell=' + encodeURIComponent(JSON.stringify(this.cell.toJSON()));
-        window.open(cellurl);
+    NotebookTag.prototype.getContent = function(handler) {
+        var url = this.getBaseURL() + this.path + '/meme';
+        var self = this;
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            success: function (json) {
+                console.log(self, json);
+
+                handler(JSON.stringify({'meme': json['meme'],
+                                        'toc': json['toc']}));
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error(textStatus, errorThrown);
+
+                handler(undefined);
+            }
+        });
     };
 
-    Tag.prototype.createElement = function() {
-        var content;
-        var meme = this.cell.metadata['lc_cell_meme'];
-        if (meme) {
-            var self = this;
-            content = $('<span></span>')
-                          .addClass('nbtags-tag')
-                          .append($('<i class="fa fa-refresh nbtags-refresh"></i>')
-                              .click(function() {
-                                  refresh(self);
-                              }));
-        } else {
-            content = $('<span></span>')
-        }
-        this.element = $('<div></div>')
-                           .addClass('nbtags-base')
-                           .append(content);
-        return this.element;
+    NotebookTag.prototype.getBaseURL = function() {
+        return utils.get_body_data('baseUrl') + 'nbtags/notebook';
     };
 
     return {
-        Tag: Tag,
+        CellTag: CellTag,
+        NotebookTag: NotebookTag,
         check_content: check_content
     };
 });

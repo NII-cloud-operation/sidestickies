@@ -30,9 +30,9 @@ def load_jupyter_server_extension(nb_app):
 
     host_pattern = '.*$'
     c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
-                                    r'/nbtags/cell/(?P<meme>[A-Za-z0-9\-]+)')
+                                    r'/nbtags/(?P<target>cell|notebook)/(?P<meme>[A-Za-z0-9\-]+)')
     nb_app.web_app.add_handlers(host_pattern, [
-        (c_route_pattern, handler.CellTagsHandler, dict(nb_app=nb_app))
+        (c_route_pattern, handler.TagsHandler, dict(nb_app=nb_app))
     ])
 
     c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
@@ -42,7 +42,13 @@ def load_jupyter_server_extension(nb_app):
     ])
 
     c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
-                                    r'/nbtags/notebook/(.+\.ipynb)/meme')
+                                    r'/nbtags/notebook')
+    nb_app.web_app.add_handlers(host_pattern, [
+        (c_route_pattern, handler.NotebookCreateURLHandler, dict(nb_app=nb_app))
+    ])
+
+    c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
+                                    r'/nbtags/notebook/(?P<path>.+\.ipynb)/meme')
     nb_app.web_app.add_handlers(host_pattern, [
         (c_route_pattern, handler.NotebookMemeHandler, dict(nb_app=nb_app))
     ])

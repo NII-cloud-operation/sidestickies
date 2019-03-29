@@ -14,6 +14,61 @@ define([
     // defaults, overridden by server's config
     var options = {};
 
+    var tags = [];
+
+    function extend_file(item) {
+        var a = item.find('a');
+        var path = a.attr('href');
+        if (! path) {
+            return path;
+        }
+        var itemName = a.find('.item_name').text();
+        if (itemName === undefined) {
+            return undefined;
+        }
+        var pathPart = /^\/notebooks(\/.+)$/.exec(path);
+        if (! pathPart) {
+            return undefined;
+        }
+        var old = tags.filter(function(t) {
+            return t.path == pathPart[1];
+        });
+        if (old.length > 0) {
+            return pathPart[1];
+        }
+        console.log(log_prefix, 'Modified', pathPart[1], itemName);
+        var t = new tagging.NotebookTag(pathPart[1]);
+        tags.push(t);
+        t.createElement(function(child) {
+            item.find('.col-md-12').append(child);
+            tagging.check_content(t);
+        });
+        return pathPart[1];
+    }
+
+    function scan_tree() {
+        var actives = [];
+        $('#notebook_list .list_item').each(function(i, e) {
+            var path = extend_file($(e));
+            if (path) {
+                actives.push(path);
+            }
+        });
+        var removed = tags.map(function(t1, index) {
+            var exists = actives.find(function(t2) {
+                return t1.path == t2;
+            });
+            return {'index': index, 'notexists': exists === undefined,
+                    'tag': t1};
+        }).filter(function(e) {
+            return e['notexists'];
+        });
+        removed.reverse().forEach(function(e) {
+            console.log('Removed', e['tag']);
+            tags.splice(e['index'], 1);
+        });
+    }
+
     /* Load additional CSS */
     var load_css = function (name) {
         var link = document.createElement("link");
@@ -30,6 +85,10 @@ define([
     var init_nbtags = function() {
         load_extension();
 
+        scan_tree();
+        $("#notebook_list").bind("DOMSubtreeModified", function() {
+            scan_tree();
+        });
         console.log(log_prefix, 'Loaded')
     };
 

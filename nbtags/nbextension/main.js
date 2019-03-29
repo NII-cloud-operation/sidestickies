@@ -23,9 +23,11 @@ define([
     }
 
     function extend_cell(cell) {
-        var t = new tagging.Tag(cell);
-        cell.element.append(t.createElement());
-        tagging.check_content(t);
+        var t = new tagging.CellTag(cell);
+        t.createElement(function(child) {
+            cell.element.append(child);
+            tagging.check_content(t);
+        });
     }
 
     /* Load additional CSS */
