@@ -4,6 +4,11 @@
     z-index: 100;
 }
 
+.list_item .nbtags-base {
+    right: -4em;
+    top: 0em;
+}
+
 .nbtags-tag {
     padding: 0.5em 1em;
     margin: 1em 0;
@@ -11,6 +16,12 @@
     background: #f4f4f4;
     border-right: solid 6px #ccc;
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.33);
+}
+
+.nbtags-notebook-base {
+    top: 8.5em;
+    left: 0em;
+    position: fixed;
 }
 
 .nbtags-refresh {
@@ -22,7 +33,15 @@
 }
 
 .nbtags-has-page {
-  border-right: solid 6px #5bb7ae;
+    border-right: solid 6px #5bb7ae;
+}
+
+.list_item .nbtags-has-page {
+    border-right: solid 6px #4169e1;
+}
+
+.nbtags-notebook-base .nbtags-has-page {
+    border-right: solid 6px #4169e1;
 }
 
 .nbtags-tag p {

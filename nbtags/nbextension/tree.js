@@ -1,0 +1,121 @@
+define([
+    'base/js/namespace',
+    'jquery',
+    'require',
+    'base/js/events',
+    'services/config',
+    './tagging'
+], function(Jupyter, $, require, events, configmod, tagging) {
+    "use strict";
+
+    var mod_name = 'NBTags';
+    var log_prefix = '[' + mod_name + ']';
+
+    // defaults, overridden by server's config
+    var options = {};
+
+    var tags = [];
+    var cached_tags = [];
+    var last_url = null;
+
+    function extend_file(item) {
+        var a = item.find('a');
+        var path = a.attr('href');
+        if (! path) {
+            return path;
+        }
+        var itemName = a.find('.item_name').text();
+        if (itemName === undefined) {
+            return undefined;
+        }
+        var pathPart = /^\/notebooks(\/.+)$/.exec(path);
+        if (! pathPart) {
+            return undefined;
+        }
+        var old = tags.filter(function(t) {
+            return t.path == pathPart[1];
+        });
+        if (old.length > 0) {
+            return pathPart[1];
+        }
+        var cached = cached_tags.filter(function(t) {
+            return t.path == pathPart[1];
+        });
+        if (cached.length > 0) {
+            console.log(log_prefix, 'Reusing', pathPart[1], itemName);
+            tags.push(cached[0]);
+            item.find('.col-md-12').append(cached[0].element);
+        } else {
+            console.log(log_prefix, 'Creating', pathPart[1], itemName);
+            var t = new tagging.NotebookTag(pathPart[1]);
+            tags.push(t);
+            cached_tags.push(t);
+            t.createElement(function(child) {
+                item.find('.col-md-12').append(child);
+                tagging.check_content(t);
+            });
+        }
+        return pathPart[1];
+    }
+
+    function _remove_tags(tags, actives) {
+        var removed = tags.map(function(t1, index) {
+            var exists = actives.find(function(t2) {
+                return t1.path == t2;
+            });
+            return {'index': index, 'notexists': exists === undefined,
+                    'tag': t1};
+        }).filter(function(e) {
+            return e['notexists'];
+        });
+        removed.reverse().forEach(function(e) {
+            console.log('Removed', e['tag']);
+            tags.splice(e['index'], 1);
+        });
+        return removed.length;
+    }
+
+    function scan_tree() {
+        var actives = [];
+        $('#notebook_list .list_item').each(function(i, e) {
+            var path = extend_file($(e));
+            if (path) {
+                actives.push(path);
+            }
+        });
+        _remove_tags(tags, actives);
+        if (window.location.href != last_url) {
+            var removed = _remove_tags(cached_tags, actives);
+            console.log(log_prefix, 'Removed', removed);
+            last_url = window.location.href;
+        }
+    }
+
+    /* Load additional CSS */
+    var load_css = function (name) {
+        var link = document.createElement("link");
+        link.type = "text/css";
+        link.rel = "stylesheet";
+        link.href = require.toUrl(name, 'css');
+        document.getElementsByTagName("head")[0].appendChild(link);
+    };
+
+    var load_extension = function() {
+        load_css('./main.css');
+    };
+
+    var init_nbtags = function() {
+        load_extension();
+
+        scan_tree();
+        $("#notebook_list").bind("DOMSubtreeModified", function() {
+            scan_tree();
+        });
+        console.log(log_prefix, 'Loaded')
+    };
+
+    return {
+        load_ipython_extension : init_nbtags,
+        load_jupyter_extension : init_nbtags
+    };
+});

@@ -6,12 +6,13 @@ import re
 from nbtags.scrapbox import ScrapboxAPI
 
 
-class CellTagsHandler(IPythonHandler):
+class TagsHandler(IPythonHandler):
     def initialize(self, nb_app):
         self.nb_app = nb_app
 
     @web.authenticated
-    def get(self, meme):
+    def get(self, target, meme):
+        self.log.info('Tags: {}, {}'.format(target, meme))
         sbapi = ScrapboxAPI(parent=self.nb_app)
         links = sbapi.get(meme)
         page_content = None
@@ -54,13 +55,13 @@ class CellTagsHandler(IPythonHandler):
         if 'lines' in p:
             has_code = len([desc
                             for desc in p['lines']
-                            if desc['text'].startswith('code:cell.')]) > 0
+                            if self._has_code(desc['text'])]) > 0
         else:
             self.log.info('No lines(maybe relatedPages): {}'.format(p['title']))
             details = sbapi.get(p['title'])
             has_code = len([desc
                             for desc in details['lines']
-                            if desc['text'].startswith('code:')]) > 0
+                            if self._has_code(desc['text'])]) > 0
         return {'description': self.summarized_desc(meme, p),
                 'page_url': sbapi.get_view_url(p['title']),
                 'title': p['title'],
@@ -83,6 +84,9 @@ class CellTagsHandler(IPythonHandler):
         if len(desc) == 0:
             return ''
         return desc[0].replace('#' + meme, '').strip()
+
+    def _has_code(self, text):
+        return text.startswith('code:cell.') or text.strip() == 'code:toc.md'
 
 
 class CellCreateURLHandler(IPythonHandler):
@@ -118,3 +122,53 @@ class CellCreateURLHandler(IPythonHandler):
             return code + '\n'
         else:
             return ''
+
+
+class NotebookCreateURLHandler(IPythonHandler):
+    def initialize(self, nb_app):
+        self.nb_app = nb_app
+
+    @web.authenticated
+    def get(self):
+        notebook = json.loads(self.get_query_argument('notebook'))
+        self.log.info('Notebook: {}'.format(notebook))
+        meme = notebook['meme']['current']
+        if self.get_query_argument('mode', default='new') != 'edit':
+            tag = '\n\n#{}\n'.format(meme)
+        else:
+            tag = ''
+
+        sbapi = ScrapboxAPI(parent=self.nb_app)
+        title = self.get_query_argument('title', default=meme)
+        url = sbapi.get_create_url(title,
+                                   tag + self._get_content(notebook['toc']))
+
+        self.redirect(url)
+
+    def _get_content(self, toc):
+        return 'code:toc.md\n' + '\n'.join(['  ' + l for l in toc])
+
+
+class NotebookMemeHandler(IPythonHandler):
+    def initialize(self, nb_app):
+        self.nb_app = nb_app
+
+    @web.authenticated
+    def get(self, path):
+        self.log.info('NotebookMeme: {}'.format(path))
+        contents_manager = self.nb_app.contents_manager
+        file_object = contents_manager.get(path, content=True)
+        assert file_object['format'] == 'json'
+        metadata = file_object['content']['metadata']
+        if 'lc_notebook_meme' in metadata:
+            meme = metadata['lc_notebook_meme']
+        else:
+            meme = None
+        cells = file_object['content']['cells']
+        toc = []
+        for cell in cells:
+            if cell['cell_type'] != 'markdown':
+                continue
+            if cell['source'].startswith('#'):
+                toc.append(cell['source'].split('\n')[0])
+        self.finish(dict(meme=meme, toc=toc, path=path))
