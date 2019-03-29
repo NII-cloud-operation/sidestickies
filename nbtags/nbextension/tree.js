@@ -28,26 +28,27 @@ define([
         if (itemName === undefined) {
             return undefined;
         }
-        var pathPart = /^\/notebooks(\/.+)$/.exec(path);
+        var pathPart = /^(\/user\/[^\/]+)?\/notebooks(\/.+)$/.exec(path);
         if (! pathPart) {
             return undefined;
         }
+        var contentPath = pathPart[2];
         var old = tags.filter(function(t) {
-            return t.path == pathPart[1];
+            return t.path == contentPath;
         });
         if (old.length > 0) {
-            return pathPart[1];
+            return contentPath;
         }
         var cached = cached_tags.filter(function(t) {
-            return t.path == pathPart[1];
+            return t.path == contentPath;
         });
         if (cached.length > 0) {
-            console.log(log_prefix, 'Reusing', pathPart[1], itemName);
+            console.log(log_prefix, 'Reusing', contentPath, itemName);
             tags.push(cached[0]);
             item.find('.col-md-12').append(cached[0].element);
         } else {
-            console.log(log_prefix, 'Creating', pathPart[1], itemName);
-            var t = new tagging.NotebookTag(pathPart[1]);
+            console.log(log_prefix, 'Creating', contentPath, itemName);
+            var t = new tagging.NotebookTag(contentPath);
             tags.push(t);
             cached_tags.push(t);
             t.createElement(function(child) {
@@ -55,7 +56,7 @@ define([
                 tagging.check_content(t);
             });
         }
-        return pathPart[1];
+        return contentPath;
     }
 
     function _remove_tags(tags, actives) {
