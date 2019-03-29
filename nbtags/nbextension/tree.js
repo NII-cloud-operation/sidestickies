@@ -15,6 +15,8 @@ define([
     var options = {};
 
     var tags = [];
+    var cached_tags = [];
+    var last_url = null;
 
     function extend_file(item) {
         var a = item.find('a');
@@ -36,24 +38,27 @@ define([
         if (old.length > 0) {
             return pathPart[1];
         }
-        console.log(log_prefix, 'Modified', pathPart[1], itemName);
-        var t = new tagging.NotebookTag(pathPart[1]);
-        tags.push(t);
-        t.createElement(function(child) {
-            item.find('.col-md-12').append(child);
-            tagging.check_content(t);
+        var cached = cached_tags.filter(function(t) {
+            return t.path == pathPart[1];
         });
+        if (cached.length > 0) {
+            console.log(log_prefix, 'Reusing', pathPart[1], itemName);
+            tags.push(cached[0]);
+            item.find('.col-md-12').append(cached[0].element);
+        } else {
+            console.log(log_prefix, 'Creating', pathPart[1], itemName);
+            var t = new tagging.NotebookTag(pathPart[1]);
+            tags.push(t);
+            cached_tags.push(t);
+            t.createElement(function(child) {
+                item.find('.col-md-12').append(child);
+                tagging.check_content(t);
+            });
+        }
         return pathPart[1];
     }
 
-    function scan_tree() {
-        var actives = [];
-        $('#notebook_list .list_item').each(function(i, e) {
-            var path = extend_file($(e));
-            if (path) {
-                actives.push(path);
-            }
-        });
+    function _remove_tags(tags, actives) {
         var removed = tags.map(function(t1, index) {
             var exists = actives.find(function(t2) {
                 return t1.path == t2;
@@ -67,6 +72,23 @@ define([
             console.log('Removed', e['tag']);
             tags.splice(e['index'], 1);
         });
+        return removed.length;
+    }
+
+    function scan_tree() {
+        var actives = [];
+        $('#notebook_list .list_item').each(function(i, e) {
+            var path = extend_file($(e));
+            if (path) {
+                actives.push(path);
+            }
+        });
+        _remove_tags(tags, actives);
+        if (window.location.href != last_url) {
+            var removed = _remove_tags(cached_tags, actives);
+            console.log(log_prefix, 'Removed', removed);
+            last_url = window.location.href;
+        }
     }
 
     /* Load additional CSS */
