@@ -15,7 +15,7 @@ define([
     var refresh_interval_ms = 1000 * 60 * 10;
 
     function refresh(tag) {
-        console.log('Refresh', tag);
+        console.log(log_prefix, 'Refresh', tag);
         $('.nbtags-refresh', tag.element).addClass('fa-spin');
         tag.checkContent(function() {
             $('.nbtags-refresh', tag.element).removeClass('fa-spin');
@@ -62,13 +62,13 @@ define([
                 finished(self);
                 return;
             }
-            console.log('Check content', meme);
+            console.log(log_prefix, 'Check content', meme);
             var url = self.getBaseURL() + '/' + meme['current'];
             $.ajax({
                 url: url,
                 dataType: 'json',
                 success: function (json) {
-                    console.log(self, meme, json);
+                    console.log(log_prefix, self, meme, json);
                     var c = $('.nbtags-tag', self.element);
                     c.empty();
                     c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
@@ -109,7 +109,7 @@ define([
                     finished(self);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    console.error(textStatus, errorThrown);
+                    console.error(log_prefix, textStatus, errorThrown);
                     var c = $('.nbtags-tag', self.element);
                     c.empty();
                     c.append($('<i class="fa fa-refresh nbtags-refresh"></i>')
@@ -127,7 +127,7 @@ define([
         var url = this.getBaseURL();
         var self = this;
         this.getContent(function(content) {
-            console.log(content);
+            console.log(log_prefix, content);
             var cellurl = url + '?' + self.query + '=' + encodeURIComponent(content);
             window.open(cellurl);
         });
@@ -171,7 +171,14 @@ define([
     };
 
     CellTag.prototype.getContent = function(handler) {
-        handler(JSON.stringify(this.cell.toJSON()));
+        var cell = this.cell.toJSON();
+        var content = {};
+        content['cell_type'] = cell['cell_type'];
+        content['metadata'] = {'lc_cell_meme': cell['metadata']['lc_cell_meme']};
+        content['source'] = cell['source'].length < 100 ?
+                            cell['source'] : cell['source'].substring(0, 98) + '..';
+        console.log(log_prefix, 'Content', content)
+        handler(JSON.stringify(content));
     };
 
     CellTag.prototype.getBaseURL = function() {
@@ -196,12 +203,12 @@ define([
             url: url,
             dataType: 'json',
             success: function (json) {
-                console.log(self, json);
+                console.log(log_prefix, self, json);
 
                 handler(json['meme']);
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error(textStatus, errorThrown);
+                console.error(log_prefix, textStatus, errorThrown);
 
                 handler(undefined);
             }
@@ -215,13 +222,13 @@ define([
             url: url,
             dataType: 'json',
             success: function (json) {
-                console.log(self, json);
+                console.log(log_prefix, self, json);
 
                 handler(JSON.stringify({'meme': json['meme'],
                                         'toc': json['toc']}));
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error(textStatus, errorThrown);
+                console.error(log_prefix, textStatus, errorThrown);
 
                 handler(undefined);
             }
