@@ -72,6 +72,8 @@ define([
 
     function Tag(cell) {
         this.cell = cell;
+        this.element = null;
+        this.hasMEME = false;
         this.cachedJSON = null;
     }
 
@@ -167,7 +169,9 @@ define([
         var self = this;
         this.getMEME(function(meme) {
             var content;
+            var noMEME = self.hasMEME == false;
             if (meme) {
+                self.hasMEME = true;
                 content = $('<span></span>')
                               .addClass('nbtags-tag')
                               .append($('<span class="item_name"><i class="fa fa-refresh nbtags-refresh"></i></span>')
@@ -178,9 +182,15 @@ define([
             } else {
                 content = $('<span></span>')
             }
-            self.element = $('<div></div>')
-                               .addClass('nbtags-base')
-                               .append(content);
+            if (noMEME) {
+                if (self.element) {
+                    self.element.empty().append(content);
+                } else {
+                    self.element = $('<div></div>')
+                                       .addClass('nbtags-base')
+                                       .append(content);
+                }
+            }
             created(self.element);
         });
     };

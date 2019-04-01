@@ -14,6 +14,8 @@ define([
     // defaults, overridden by server's config
     var options = {};
 
+    var tags = [];
+
     function init_events() {
         events.on('create.Cell', function (e, data) {
             setTimeout(function() {
@@ -32,9 +34,23 @@ define([
 
     function extend_cell(cell) {
         var t = new tagging.CellTag(cell);
+        tags.push(t);
         t.createElement(function(child) {
             cell.element.append(child);
             tagging.check_content(t);
+        });
+    }
+
+    function on_notebook_saved() {
+        tags.filter(function(t) {
+            return t.hasMEME == false;
+        }).forEach(function(t) {
+            console.log(log_prefix, 'Without MEME', t);
+            if (t.cell.metadata['lc_cell_meme']) {
+                t.createElement(function(child) {
+                    tagging.check_content(t);
+                });
+            }
         });
     }
 
@@ -82,6 +98,7 @@ define([
             if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
                 on_notebook_loaded();
             }
+            events.on('notebook_saved.Notebook', on_notebook_saved);
         }).catch(function on_error(reason) {
             console.error(log_prefix, 'Error:', reason);
         });
