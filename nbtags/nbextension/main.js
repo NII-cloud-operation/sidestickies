@@ -14,6 +14,9 @@ define([
     // defaults, overridden by server's config
     var options = {};
 
+    var notebook_tag = null;
+    var cell_tags = [];
+
     function init_events() {
         events.on('create.Cell', function (e, data) {
             setTimeout(function() {
@@ -24,6 +27,7 @@ define([
 
     function attach_notebook_tag() {
         var t = new tagging.NotebookPageTag(Jupyter.notebook);
+        notebook_tag = t;
         t.createElement(function(child) {
             $('#notebook').append(child.addClass('nbtags-notebook-base'));
             tagging.check_content(t);
@@ -32,10 +36,32 @@ define([
 
     function extend_cell(cell) {
         var t = new tagging.CellTag(cell);
+        cell_tags.push(t);
         t.createElement(function(child) {
             cell.element.append(child);
             tagging.check_content(t);
         });
+    }
+
+    function on_notebook_saved() {
+        cell_tags.filter(function(t) {
+            return t.hasMEME == false;
+        }).forEach(function(t) {
+            console.log(log_prefix, 'Without MEME', t);
+            if (t.cell.metadata['lc_cell_meme']) {
+                t.createElement(function(child) {
+                    tagging.check_content(t);
+                });
+            }
+        });
+        if (notebook_tag != null && notebook_tag.hasMEME == false) {
+            var t = notebook_tag;
+            if (t.notebook.metadata['lc_notebook_meme']) {
+                t.createElement(function(child) {
+                    tagging.check_content(t);
+                });
+            }
+        }
     }
 
     /* Load additional CSS */
@@ -82,6 +108,7 @@ define([
             if (Jupyter.notebook !== undefined && Jupyter.notebook._fully_loaded) {
                 on_notebook_loaded();
             }
+            events.on('notebook_saved.Notebook', on_notebook_saved);
         }).catch(function on_error(reason) {
             console.error(log_prefix, 'Error:', reason);
         });
