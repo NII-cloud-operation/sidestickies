@@ -16,12 +16,13 @@ class TagsHandler(IPythonHandler):
         sbapi = ScrapboxAPI(parent=self.nb_app)
         links = sbapi.get(meme)
         page_content = None
-        if links['persistent']:
-            page_content = self.collect_content({'user': links['user']},
-                                                links)
-        related = {}
-        related['1'] = self.get_relates(links['relatedPages']['links1hop'])
-        related['2'] = self.get_relates(links['relatedPages']['links2hop'])
+        related = {'1': [], '2': []}
+        if links is not None:
+            if links['persistent']:
+                page_content = self.collect_content({'user': links['user']},
+                                                    links)
+            related['1'] = self.get_relates(links['relatedPages']['links1hop'])
+            related['2'] = self.get_relates(links['relatedPages']['links2hop'])
 
         summary = self.summarize(meme, page_content, related)
 
