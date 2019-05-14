@@ -22,7 +22,14 @@ class ScrapboxAPI(LoggingConfigurable):
     def get(self, meme):
         url = self._scrapbox_endpoint('pages/{}/{}'.format(self.project_id,
                                                                meme))
-        resp = requests.get(url, cookies={'connect.sid': self.cookie_connect_sid})
+        if self.cookie_connect_sid:
+            cookies = {'connect.sid': self.cookie_connect_sid}
+            resp = requests.get(url, cookies=cookies)
+        else:
+            resp = requests.get(url)
+        if resp.status_code == requests.codes.not_found:
+            return None
+        resp.raise_for_status()
         return resp.json()
 
     def get_view_url(self, title):
