@@ -5,3 +5,4 @@ build/
 *.pyc
 **/*.pyc
 example/config.py
+.DS_Store

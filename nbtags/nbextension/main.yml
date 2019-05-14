@@ -1,0 +1,8 @@
+Type: Jupyter Notebook Extension
+Name: Sidestickies for notebook
+Section: notebook
+Description: "Sticky Note for Jupyter Notebook"
+Link: README.md
+Icon: main.png
+Main: main.js
+Compatibility: 5.x

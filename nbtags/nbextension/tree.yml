@@ -1,0 +1,8 @@
+Type: Jupyter Notebook Extension
+Name: Sidestickies for file tree
+Section: tree
+Description: "Sticky Note for Jupyter Notebook"
+Link: README.md
+Icon: tree.png
+Main: tree.js
+Compatibility: 5.x
