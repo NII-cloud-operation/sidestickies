@@ -71,6 +71,19 @@ define([
         }
     }
 
+    function set_metadata(key, value) {
+        var md = Jupyter.notebook.metadata.sidestickies;
+        if (md === undefined) {
+            md = Jupyter.notebook.metadata.sidestickies = {};
+        }
+        var old_val = md[key];
+        md[key] = value;
+        if (typeof _ !== undefined ? !_.isEqual(value, old_val) : old_val != value) {
+            Jupyter.notebook.set_dirty();
+        }
+        return value;
+    }
+
     function toggle() {
         visible = $('#toggle-sidestickies').attr('aria-pressed') == 'false';
         cell_tags.forEach(function(t) {
@@ -88,6 +101,7 @@ define([
                 t.hide();
             }
         }
+        set_metadata('visible', visible);
     }
 
     /* Load additional CSS */
@@ -124,6 +138,13 @@ define([
         * execute this extension on load
         */
         var on_notebook_loaded = function() {
+            var md = Jupyter.notebook.metadata.sidestickies || {};
+            if (md['visible']) {
+                $('#toggle-sidestickies')
+                    .addClass('active')
+                    .attr('aria-pressed', 'true');
+                visible = true;
+            }
             attach_notebook_tag();
 
             Jupyter.notebook.get_cells().forEach(function(cell, index, array) {
