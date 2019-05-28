@@ -1,4 +1,4 @@
-from urllib.parse import urlencode, quote_plus
+from urllib.parse import urlencode, quote
 import requests
 from traitlets import Unicode
 from traitlets.config import LoggingConfigurable
@@ -33,11 +33,13 @@ class ScrapboxAPI(LoggingConfigurable):
         return resp.json()
 
     def get_view_url(self, title):
-        return self.ENDPOINT_URL + self.project_id + '/' + quote_plus(title)
+        return self.ENDPOINT_URL + self.project_id + '/' + quote(title)
 
-    def get_create_url(self, title, body):
+    def get_create_url(self, title, body, max_content_length=1024):
+        if len(body) > max_content_length:
+            body = body[:max_content_length]
         return self.get_view_url(title) + \
-               '?' + urlencode({'body': body}, quote_via=quote_plus)
+               '?' + urlencode({'body': body}, quote_via=quote)
 
     def _scrapbox_endpoint(self, api_endpoint):
         if api_endpoint.startswith('/'):
