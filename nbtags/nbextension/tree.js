@@ -17,6 +17,7 @@ define([
     var tags = [];
     var cached_tags = [];
     var last_url = null;
+    var visible = false;
 
     function extend_file(item) {
         var a = item.find('a');
@@ -54,6 +55,9 @@ define([
                     tagging.check_content(t);
                 }
             });
+            if (visible) {
+                t.show();
+            }
         } else {
             console.log(log_prefix, 'Creating', contentPath, itemName);
             var t = new tagging.NotebookTag(contentPath);
@@ -63,6 +67,9 @@ define([
                 item.find('.col-md-12').append(child);
                 tagging.check_content(t);
             });
+            if (visible) {
+                t.show();
+            }
         }
         return contentPath;
     }
@@ -100,6 +107,17 @@ define([
         }
     }
 
+    function toggle() {
+        visible = $(this).attr('aria-pressed') == 'false';
+        tags.forEach(function(t) {
+            if (visible) {
+                t.show();
+            } else {
+                t.hide();
+            }
+        });
+    }
+
     /* Load additional CSS */
     var load_css = function (name) {
         var link = document.createElement("link");
@@ -120,6 +138,14 @@ define([
         $("#notebook_list").bind("DOMSubtreeModified", function() {
             scan_tree();
         });
+        var toggle_button = $('<button></button>')
+                                .addClass('btn btn-default btn-xs')
+                                .attr('data-toggle', 'button')
+                                .attr('aria-pressed', 'false')
+                                .append($('<i></i>').addClass('fa fa-comments'))
+                                .append($('<span></span>').text(' Sidestickies'));
+        toggle_button.click(toggle);
+        $('#new-buttons').parent().prepend(toggle_button);
         console.log(log_prefix, 'Loaded')
     };
 

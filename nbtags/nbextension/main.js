@@ -16,6 +16,7 @@ define([
 
     var notebook_tag = null;
     var cell_tags = [];
+    var visible = false;
 
     function init_events() {
         events.on('create.Cell', function (e, data) {
@@ -32,6 +33,9 @@ define([
             $('#notebook').append(child.addClass('nbtags-notebook-base'));
             tagging.check_content(t);
         });
+        if (visible) {
+            t.show();
+        }
     }
 
     function extend_cell(cell) {
@@ -41,6 +45,9 @@ define([
             cell.element.append(child);
             tagging.check_content(t);
         });
+        if (visible) {
+            t.show();
+        }
     }
 
     function on_notebook_saved() {
@@ -64,6 +71,25 @@ define([
         }
     }
 
+    function toggle() {
+        visible = $('#toggle-sidestickies').attr('aria-pressed') == 'false';
+        cell_tags.forEach(function(t) {
+            if (visible) {
+                t.show();
+            } else {
+                t.hide();
+            }
+        });
+        var t = notebook_tag;
+        if (t) {
+            if (visible) {
+                t.show();
+            } else {
+                t.hide();
+            }
+        }
+    }
+
     /* Load additional CSS */
     var load_css = function (name) {
         var link = document.createElement("link");
@@ -78,9 +104,16 @@ define([
     };
 
     function register_toolbar_buttons() {
-        var buttons = [];
-
-        Jupyter.toolbar.add_buttons_group(buttons);
+        var buttons = [Jupyter.keyboard_manager.actions.register({
+                    'help'   : 'Sidestickies',
+                    'icon'   : 'fa-comments',
+                    'handler': function() { toggle(); },
+                }, 'toggle-sidestickies', 'sidestickies')];
+        Jupyter.toolbar.add_buttons_group(buttons)
+            .find('.btn')
+            .attr('id', 'toggle-sidestickies')
+            .attr('data-toggle', 'button')
+            .attr('aria-pressed', 'false');
     }
 
     var init_nbtags = function() {

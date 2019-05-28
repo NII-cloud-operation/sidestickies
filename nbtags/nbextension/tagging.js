@@ -75,6 +75,7 @@ define([
         this.element = null;
         this.hasMEME = false;
         this.cachedJSON = null;
+        this.visible = false;
     }
 
     Tag.prototype.updateContent = function(json) {
@@ -189,10 +190,29 @@ define([
                     self.element = $('<div></div>')
                                        .addClass('nbtags-base')
                                        .append(content);
+                    if (self.visible) {
+                        self.element.show();
+                    } else {
+                        self.element.hide();
+                    }
                 }
             }
             created(self.element);
         });
+    };
+
+    Tag.prototype.show = function() {
+        this.visible = true;
+        if (this.element) {
+            this.element.show();
+        }
+    };
+
+    Tag.prototype.hide = function() {
+        this.visible = false;
+        if (this.element) {
+            this.element.hide();
+        }
     };
 
     function CellTag(cell) {
