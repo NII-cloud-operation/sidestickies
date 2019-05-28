@@ -6,3 +6,4 @@ build/
 **/*.pyc
 example/config.py
 .DS_Store
+.python-version
