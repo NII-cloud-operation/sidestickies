@@ -14,7 +14,7 @@ $ pip install git+https://github.com/NII-cloud-operation/Jupyter-LC_nblineage.gi
 $ jupyter nblineage quick-setup
 ```
 
-Sidestickes requires https://scrapbox.io/ accounts of https://scrapbox.io/ and Scrapbox's projects in order to store sticky notes.
+Sidestickes requires accounts of https://scrapbox.io/ and Scrapbox's projects in order to store sticky notes.
 
 ## Install sidestickies
 
