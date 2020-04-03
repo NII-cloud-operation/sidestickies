@@ -13,6 +13,14 @@ class TagsHandler(IPythonHandler):
     @web.authenticated
     def get(self, target, meme):
         self.log.info('Tags: {}, {}'.format(target, meme))
+        summary, page_content, related = self.get_tag_info(meme)
+        if summary is None:
+            meme, _ = parse_cell_id(meme)
+            summary, page_content, related = self.get_tag_info(meme)
+        self.finish(dict(meme=meme, page=page_content, related_pages=related,
+                         summary=summary))
+
+    def get_tag_info(self, meme):
         sbapi = ScrapboxAPI(parent=self.nb_app)
         links = sbapi.get(meme)
         page_content = None
@@ -23,11 +31,7 @@ class TagsHandler(IPythonHandler):
                                                     links)
             related['1'] = self.get_relates(links['relatedPages']['links1hop'])
             related['2'] = self.get_relates(links['relatedPages']['links2hop'])
-
-        summary = self.summarize(meme, page_content, related)
-
-        self.finish(dict(meme=meme, page=page_content, related_pages=related,
-                         summary=summary))
+        return self.summarize(meme, page_content, related), page_content, related
 
     def collect_content(self, page, links):
         for item in ['id', 'title', 'updated', 'accessed', 'image',
@@ -70,8 +74,10 @@ class TagsHandler(IPythonHandler):
                 'count': '{}'.format(count)}
 
     def summarized_desc(self, meme, page):
-        if len(page['title'].replace(meme, '').strip()) > 0:
-            return page['title'].replace(meme, '').strip()
+        uuid_meme, _ = parse_cell_id(meme)
+        meme_regexp = re.compile(uuid_meme + r'(-[0-9]+(-[0-9a-fA-F]{4}){1,10})?')
+        if len(re.sub(meme_regexp, '', page['title']).strip()) > 0:
+            return re.sub(meme_regexp, '', page['title']).strip()
         desc = page['descriptions']
         code_block = re.compile(r'^\S+')
         while len(desc) > 0 and (desc[0].strip() == '' or
@@ -84,7 +90,7 @@ class TagsHandler(IPythonHandler):
             desc = desc[1:]
         if len(desc) == 0:
             return ''
-        return desc[0].replace('#' + meme, '').strip()
+        return re.sub('#' + uuid_meme + r'(-[0-9]+(-[0-9a-fA-F]{4}){1,10})?', '', desc[0]).strip()
 
     def _has_code(self, text):
         return text.startswith('code:cell.') or text.strip() == 'code:toc.md'
@@ -99,8 +105,11 @@ class CellCreateURLHandler(IPythonHandler):
         cell = json.loads(self.get_query_argument('cell'))
         self.log.info('Cell: {}'.format(cell))
         meme = cell['metadata']['lc_cell_meme']['current']
+        uuid_meme, _ = parse_cell_id(meme)
         if self.get_query_argument('mode', default='new') != 'edit':
-            tag = '\n\n#{}\n'.format(meme)
+            tag = '\n\n#{}\n'.format(uuid_meme)
+            if meme != uuid_meme:
+                tag += '#{}\n'.format(meme)
         else:
             tag = ''
 
@@ -173,3 +182,8 @@ class NotebookMemeHandler(IPythonHandler):
             if cell['source'].startswith('#'):
                 toc.append(cell['source'].split('\n')[0])
         self.finish(dict(meme=meme, toc=toc, path=path))
+
+
+def parse_cell_id(cell_id):
+    parts = cell_id.split('-')
+    return '-'.join(parts[:5]), '-'.join(parts[5:])

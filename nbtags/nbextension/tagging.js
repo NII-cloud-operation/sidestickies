@@ -99,18 +99,22 @@ define([
                 .append($('<i class="fa fa-comments"></i>'))
                 .append(summary['count'])
                 .click(function(event) {
-                           if (! summary['has_code']) {
-                               var url = self.getBaseURL();
-                               self.getContent(function(content) {
-                                   var curl = url + '?title=' + encodeURIComponent(summary['title']) +
-                                              '&mode=edit' +
-                                              '&' + self.query +
-                                              '=' + encodeURIComponent(content);
-                                   window.open(curl);
-                               });
-                           } else {
-                               window.open(summary['page_url']);
-                           }
+                           self.getMEME(function (meme) {
+                               if (json['meme'] !== meme['current']) {
+                                   self.create();
+                               } else if (! summary['has_code']) {
+                                   var url = self.getBaseURL();
+                                   self.getContent(function(content) {
+                                       var curl = url + '?title=' + encodeURIComponent(summary['title']) +
+                                         '&mode=edit' +
+                                         '&' + self.query +
+                                         '=' + encodeURIComponent(content);
+                                       window.open(curl);
+                                   });
+                               } else {
+                                   window.open(summary['page_url']);
+                               }
+                           });
                            event.stopPropagation();
                        }));
         } else {
