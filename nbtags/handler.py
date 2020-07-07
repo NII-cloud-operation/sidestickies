@@ -11,18 +11,18 @@ class TagsHandler(IPythonHandler):
         self.nb_app = nb_app
 
     @web.authenticated
-    def get(self, target, meme):
+    async def get(self, target, meme):
         self.log.info('Tags: {}, {}'.format(target, meme))
-        summary, page_content, related = self.get_tag_info(meme)
+        summary, page_content, related = await self.get_tag_info(meme)
         if summary is None:
             meme, _ = parse_cell_id(meme)
-            summary, page_content, related = self.get_tag_info(meme)
-        self.finish(dict(meme=meme, page=page_content, related_pages=related,
-                         summary=summary))
+            summary, page_content, related = await self.get_tag_info(meme)
+        await self.finish(dict(meme=meme, page=page_content, related_pages=related,
+                               summary=summary))
 
-    def get_tag_info(self, meme):
+    async def get_tag_info(self, meme):
         sbapi = ScrapboxAPI(parent=self.nb_app)
-        links = sbapi.get(meme)
+        links = await sbapi.get(meme)
         page_content = None
         related = {'1': [], '2': []}
         if links is not None:
@@ -31,7 +31,7 @@ class TagsHandler(IPythonHandler):
                                                     links)
             related['1'] = self.get_relates(links['relatedPages']['links1hop'])
             related['2'] = self.get_relates(links['relatedPages']['links2hop'])
-        return self.summarize(meme, page_content, related), page_content, related
+        return await self.summarize(meme, page_content, related), page_content, related
 
     def collect_content(self, page, links):
         for item in ['id', 'title', 'updated', 'accessed', 'image',
@@ -45,7 +45,7 @@ class TagsHandler(IPythonHandler):
     def get_relates(self, links):
         return [self.collect_content({}, l) for l in links]
 
-    def summarize(self, meme, page, related):
+    async def summarize(self, meme, page, related):
         sbapi = ScrapboxAPI(parent=self.nb_app)
         has_page = 1 if page is not None else 0
         count = len(related['1']) + len(related['2']) + has_page
@@ -63,7 +63,7 @@ class TagsHandler(IPythonHandler):
                             if self._has_code(desc['text'])]) > 0
         else:
             self.log.info('No lines(maybe relatedPages): {}'.format(p['title']))
-            details = sbapi.get(p['title'])
+            details = await sbapi.get(p['title'])
             has_code = len([desc
                             for desc in details['lines']
                             if self._has_code(desc['text'])]) > 0

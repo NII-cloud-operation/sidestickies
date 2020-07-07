@@ -1,5 +1,6 @@
+import json
 from urllib.parse import urlencode, quote
-import requests
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from traitlets import Unicode
 from traitlets.config import LoggingConfigurable
 
@@ -19,18 +20,20 @@ class ScrapboxAPI(LoggingConfigurable):
     def __init__(self, **kwargs):
         super(ScrapboxAPI, self).__init__(**kwargs)
 
-    def get(self, meme):
+    async def get(self, meme):
         url = self._scrapbox_endpoint('pages/{}/{}'.format(self.project_id,
                                                                meme))
+        http_client = AsyncHTTPClient()
         if self.cookie_connect_sid:
-            cookies = {'connect.sid': self.cookie_connect_sid}
-            resp = requests.get(url, cookies=cookies)
+            req = HTTPRequest(url=url, headers={'Cookie': f'connect.sid={self.cookie_connect_sid}'})
         else:
-            resp = requests.get(url)
-        if resp.status_code == requests.codes.not_found:
+            req = HTTPRequest(url=url)
+        resp = await http_client.fetch(req, raise_error=False)
+        if resp.code == 404:
             return None
-        resp.raise_for_status()
-        return resp.json()
+        if resp.error is not None:
+            raise resp.error
+        return json.loads(resp.body)
 
     def get_view_url(self, title):
         return self.ENDPOINT_URL + self.project_id + '/' + quote(title)
