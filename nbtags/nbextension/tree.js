@@ -135,8 +135,13 @@ define([
         load_extension();
 
         scan_tree();
-        $("#notebook_list").bind("DOMSubtreeModified", function() {
+        const observer = new MutationObserver((mutations) => {
             scan_tree();
+        });
+        observer.observe($("#notebook_list").get(0), {
+            attributes: true,
+            characterData: true,
+            subtree: true
         });
         var toggle_button = $('<button></button>')
                                 .addClass('btn btn-default btn-xs')
