@@ -38,6 +38,22 @@ define([
             return t.path == contentPath;
         });
         if (old.length > 0) {
+            const t = old[0];
+            const itemElement = item.find('.col-md-12');
+            if (itemElement.find('.nbtags-base').length === 0) {
+                console.log(log_prefix, 'Reattachment', contentPath, itemName);
+                t.createElement(function(child) {
+                    itemElement.append(child);
+                    if (t.cachedJSON) {
+                        t.updateContent(t.cachedJSON);
+                    } else {
+                        tagging.check_content(t);
+                    }
+                });
+                if (visible) {
+                    t.show();
+                }
+            }
             return contentPath;
         }
         var cached = cached_tags.filter(function(t) {
