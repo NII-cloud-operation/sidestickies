@@ -19,6 +19,10 @@ define([
     var last_url = null;
     var visible = false;
 
+    const scan_tree_interval_ms = 500;
+    let scan_tree_timer_id = null;
+    let scan_tree_last_time = Date.now();
+
     function extend_file(item) {
         var a = item.find('a');
         var path = a.attr('href');
@@ -108,6 +112,20 @@ define([
     }
 
     function scan_tree() {
+        if (scan_tree_timer_id) return;
+        const elapsed = Date.now() - scan_tree_last_time;
+        if (elapsed > scan_tree_interval_ms) {
+            _scan_tree();
+        } else {
+            scan_tree_timer_id = setTimeout(() => {
+                scan_tree_timer_id = null;
+                _scan_tree();
+            }, scan_tree_interval_ms - elapsed);
+        }
+    }
+
+    function _scan_tree() {
+        scan_tree_last_time = Date.now();
         var actives = [];
         $('#notebook_list .list_item').each(function(i, e) {
             var path = extend_file($(e));
