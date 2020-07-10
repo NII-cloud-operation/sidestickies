@@ -1,4 +1,5 @@
 import json
+import urllib
 from urllib.parse import urlencode, quote
 from tornado.httpclient import HTTPRequest, AsyncHTTPClient
 from traitlets import Unicode
@@ -22,7 +23,7 @@ class ScrapboxAPI(LoggingConfigurable):
 
     async def get(self, meme):
         url = self._scrapbox_endpoint('pages/{}/{}'.format(self.project_id,
-                                                               meme))
+                                                           urllib.parse.quote(meme, safe="")))
         http_client = AsyncHTTPClient()
         if self.cookie_connect_sid:
             req = HTTPRequest(url=url, headers={'Cookie': f'connect.sid={self.cookie_connect_sid}'})
