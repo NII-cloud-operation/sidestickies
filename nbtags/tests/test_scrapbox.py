@@ -1,25 +1,38 @@
-import requests
-from mock import patch
+from mock import patch, AsyncMock
+from tornado.httpclient import AsyncHTTPClient, HTTPResponse
+from pytest import mark
+from io import BytesIO
+
 from nbtags.scrapbox import ScrapboxAPI
 
 
-@patch.object(requests, 'get')
-def test_get(requests_get):
+async def dummy_fetch(req, **kwargs):
+    res = HTTPResponse(req, code=200, buffer=BytesIO())
+    res._body = '{}'
+    return res
+
+@mark.asyncio
+@patch.object(AsyncHTTPClient, 'fetch', new_callable=AsyncMock, side_effect=dummy_fetch)
+async def test_get(http_client):
     sbapi = ScrapboxAPI()
     sbapi.cookie_connect_sid = 'secret'
     sbapi.project_id = 'some_project'
-    sbapi.get('some-meme')
-    requests_get.assert_called_with('https://scrapbox.io/api/pages/'
-                                    'some_project/some-meme',
-                                    cookies={'connect.sid': 'secret'})
+    await sbapi.get('some-meme')
+    assert http_client.call_args is not None
+    req = http_client.call_args[0][0]
+    assert req.url == 'https://scrapbox.io/api/pages/some_project/some-meme'
+    assert str(req.headers) == "{'Cookie': 'connect.sid=secret'}"
 
-@patch.object(requests, 'get')
-def test_get_from_public(requests_get):
+@mark.asyncio
+@patch.object(AsyncHTTPClient, 'fetch', new_callable=AsyncMock, side_effect=dummy_fetch)
+async def test_get_from_public(http_client):
     sbapi = ScrapboxAPI()
     sbapi.project_id = 'some_project'
-    sbapi.get('some-meme')
-    requests_get.assert_called_with('https://scrapbox.io/api/pages/'
-                                    'some_project/some-meme')
+    await sbapi.get('some-meme')
+    assert http_client.call_args is not None
+    req = http_client.call_args[0][0]
+    assert req.url == 'https://scrapbox.io/api/pages/some_project/some-meme'
+    assert str(req.headers) == ''
 
 def test_get_view_url():
     sbapi = ScrapboxAPI()
