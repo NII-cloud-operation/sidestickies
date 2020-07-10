@@ -170,7 +170,10 @@ define([
 
         scan_tree();
         const observer = new MutationObserver((mutations) => {
-            scan_tree();
+            const filtered = mutations.filter(mutation => $(mutation.target).closest('.nbtags-base').length === 0);
+            if (filtered.length > 0) {
+                scan_tree();
+            }
         });
         observer.observe($("#notebook_list").get(0), {
             attributes: true,
