@@ -19,6 +19,10 @@ define([
     var last_url = null;
     var visible = false;
 
+    const scan_tree_interval_ms = 500;
+    let scan_tree_timer_id = null;
+    let scan_tree_last_time = Date.now();
+
     function extend_file(item) {
         var a = item.find('a');
         var path = a.attr('href');
@@ -38,6 +42,22 @@ define([
             return t.path == contentPath;
         });
         if (old.length > 0) {
+            const t = old[0];
+            const itemElement = item.find('.col-md-12');
+            if (itemElement.find('.nbtags-base').length === 0) {
+                console.log(log_prefix, 'Reattachment', contentPath, itemName);
+                t.createElement(function(child) {
+                    itemElement.append(child);
+                    if (t.cachedJSON) {
+                        t.updateContent(t.cachedJSON);
+                    } else {
+                        tagging.check_content(t);
+                    }
+                });
+                if (visible) {
+                    t.show();
+                }
+            }
             return contentPath;
         }
         var cached = cached_tags.filter(function(t) {
@@ -92,6 +112,20 @@ define([
     }
 
     function scan_tree() {
+        if (scan_tree_timer_id) return;
+        const elapsed = Date.now() - scan_tree_last_time;
+        if (elapsed > scan_tree_interval_ms) {
+            _scan_tree();
+        } else {
+            scan_tree_timer_id = setTimeout(() => {
+                scan_tree_timer_id = null;
+                _scan_tree();
+            }, scan_tree_interval_ms - elapsed);
+        }
+    }
+
+    function _scan_tree() {
+        scan_tree_last_time = Date.now();
         var actives = [];
         $('#notebook_list .list_item').each(function(i, e) {
             var path = extend_file($(e));
@@ -135,8 +169,16 @@ define([
         load_extension();
 
         scan_tree();
-        $("#notebook_list").bind("DOMSubtreeModified", function() {
-            scan_tree();
+        const observer = new MutationObserver((mutations) => {
+            const filtered = mutations.filter(mutation => $(mutation.target).closest('.nbtags-base').length === 0);
+            if (filtered.length > 0) {
+                scan_tree();
+            }
+        });
+        observer.observe($("#notebook_list").get(0), {
+            attributes: true,
+            characterData: true,
+            subtree: true
         });
         var toggle_button = $('<button></button>')
                                 .addClass('btn btn-default btn-xs')
