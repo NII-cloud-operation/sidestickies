@@ -5,4 +5,4 @@ Description: "Sticky Note for Jupyter Notebook"
 Link: README.md
 Icon: tree.png
 Main: tree.js
-Compatibility: 5.x
+Compatibility: 5.x 6.x
