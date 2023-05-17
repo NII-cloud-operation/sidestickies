@@ -3,7 +3,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPResponse
 from pytest import mark
 from io import BytesIO
 
-from nbtags.scrapbox import ScrapboxAPI
+from nbtags.api.scrapbox import ScrapboxAPI
 
 
 async def dummy_fetch(req, **kwargs):
@@ -13,11 +13,11 @@ async def dummy_fetch(req, **kwargs):
 
 @mark.asyncio
 @patch.object(AsyncHTTPClient, 'fetch', new_callable=AsyncMock, side_effect=dummy_fetch)
-async def test_get(http_client):
+async def test_get_summary(http_client):
     sbapi = ScrapboxAPI()
     sbapi.cookie_connect_sid = 'secret'
     sbapi.project_id = 'some_project'
-    await sbapi.get('some-meme')
+    await sbapi.get_summary('some-meme')
     assert http_client.call_args is not None
     req = http_client.call_args[0][0]
     assert req.url == 'https://scrapbox.io/api/pages/some_project/some-meme'
@@ -28,7 +28,7 @@ async def test_get(http_client):
 async def test_get_from_public(http_client):
     sbapi = ScrapboxAPI()
     sbapi.project_id = 'some_project'
-    await sbapi.get('some-meme')
+    await sbapi.get_summary('some-meme')
     assert http_client.call_args is not None
     req = http_client.call_args[0][0]
     assert req.url == 'https://scrapbox.io/api/pages/some_project/some-meme'
@@ -38,8 +38,8 @@ def test_get_view_url():
     sbapi = ScrapboxAPI()
     sbapi.project_id = 'some_project'
     base_url = 'https://scrapbox.io/some_project/'
-    assert sbapi.get_view_url('Foo') == base_url + 'Foo'
-    assert sbapi.get_view_url('Foo Bar') == base_url + 'Foo%20Bar'
+    assert sbapi._get_view_url('Foo') == base_url + 'Foo'
+    assert sbapi._get_view_url('Foo Bar') == base_url + 'Foo%20Bar'
 
 def test_get_create_url():
     sbapi = ScrapboxAPI()
