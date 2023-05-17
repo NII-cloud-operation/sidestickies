@@ -19,7 +19,7 @@ class EpWeaveAPI(BaseAPI):
         super(EpWeaveAPI, self).__init__(**kwargs)
 
     async def get_summary(self, meme):
-        url = self._endpoint('api/ep_search/search/?q={}'.format(urllib.parse.quote(f'"#{meme}"', safe="")), api=True)
+        url = self._endpoint('api/ep_weave/search/?q={}'.format(urllib.parse.quote(f'"#{meme}"', safe="")), api=True)
         http_client = AsyncHTTPClient()
         if self.apikey:
             req = HTTPRequest(url=f'{url}&apikey={self.apikey}')
