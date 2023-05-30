@@ -1,12 +1,11 @@
-from notebook.base.handlers import IPythonHandler
+from jupyter_server.base.handlers import APIHandler, JupyterHandler
 from tornado import web
 import json
-import itertools
 import re
 from nbtags.scrapbox import ScrapboxAPI
 
 
-class TagsHandler(IPythonHandler):
+class TagsHandler(APIHandler):
     def initialize(self, nb_app):
         self.nb_app = nb_app
 
@@ -96,7 +95,7 @@ class TagsHandler(IPythonHandler):
         return text.startswith('code:cell.') or text.strip() == 'code:toc.md'
 
 
-class CellCreateURLHandler(IPythonHandler):
+class CellCreateURLHandler(JupyterHandler):
     def initialize(self, nb_app):
         self.nb_app = nb_app
 
@@ -134,7 +133,7 @@ class CellCreateURLHandler(IPythonHandler):
             return ''
 
 
-class NotebookCreateURLHandler(IPythonHandler):
+class NotebookCreateURLHandler(JupyterHandler):
     def initialize(self, nb_app):
         self.nb_app = nb_app
 
@@ -159,7 +158,7 @@ class NotebookCreateURLHandler(IPythonHandler):
         return 'code:toc.md\n' + '\n'.join(['  ' + l for l in toc])
 
 
-class NotebookMemeHandler(IPythonHandler):
+class NotebookMemeHandler(APIHandler):
     def initialize(self, nb_app):
         self.nb_app = nb_app
 

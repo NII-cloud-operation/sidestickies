@@ -1,4 +1,4 @@
-FROM jupyter/scipy-notebook
+FROM jupyter/scipy-notebook:latest
 
 USER root
 
@@ -16,8 +16,13 @@ RUN mkdir /opt/nbtags && \
     chmod +x /usr/local/bin/before-notebook.d/*.sh
 USER $NB_UID
 
-RUN jupyter nbextensions_configurator enable --user && \
-    jupyter nbextension install --py --user nbtags && \
-    jupyter serverextension enable --py --user nbtags && \
-    jupyter nbextension enable --py --user nbtags && \
+RUN jupyter nbclassic-extension install --py jupyter_nbextensions_configurator --user && \
+    jupyter nbclassic-extension enable --py jupyter_nbextensions_configurator --user && \
+    jupyter nbclassic-serverextension enable --py jupyter_nbextensions_configurator --user && \
+    jupyter nbclassic-extension install --py --user nbtags && \
+    jupyter nbclassic-serverextension enable --py --user nbtags && \
+    jupyter nbclassic-extension enable --py --user nbtags && \
     jupyter nblineage quick-setup --user
+
+# Make classic notebook the default
+ENV DOCKER_STACKS_JUPYTER_CMD=nbclassic
