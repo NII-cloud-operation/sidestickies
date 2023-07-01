@@ -1,12 +1,11 @@
-from notebook.base.handlers import IPythonHandler
+from jupyter_server.base.handlers import APIHandler, JupyterHandler
 from tornado import web
 import json
-import itertools
 import re
 from .api import SidestickiesAPI
 
 
-class BaseHandler(IPythonHandler):
+class BaseHandler(APIHandler):
     _api_cache = None    
 
     def initialize(self, nb_app):

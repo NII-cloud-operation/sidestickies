@@ -16,7 +16,7 @@ setup_args = dict(name='lc-nbtags',
                   include_package_data=True,
                   zip_safe=False,
                   platforms=['Jupyter Notebook 5.x', 'Jupyter Notebook 6.x'],
-                  install_requires=['notebook>=5.0.0'])
+                  install_requires=['notebook>=6.5.4'])
 
 if __name__ == '__main__':
     setup(**setup_args)

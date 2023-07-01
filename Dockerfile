@@ -23,3 +23,6 @@ RUN jupyter nbclassic-extension install --py jupyter_nbextensions_configurator -
     jupyter nbclassic-serverextension enable --py --user nbtags && \
     jupyter nbclassic-extension enable --py --user nbtags && \
     jupyter nblineage quick-setup --user
+
+# Make classic notebook the default
+ENV DOCKER_STACKS_JUPYTER_CMD=nbclassic
