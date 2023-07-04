@@ -2,7 +2,7 @@ FROM jupyter/scipy-notebook:latest
 
 USER root
 
-RUN pip install --no-cache  jupyter_nbextensions_configurator \
+RUN pip install --no-cache jupyter_nbextensions_configurator \
     git+https://github.com/NII-cloud-operation/Jupyter-LC_nblineage.git
 
 COPY . /tmp/nbtags

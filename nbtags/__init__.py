@@ -1,4 +1,3 @@
-from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
 from . import handler
 

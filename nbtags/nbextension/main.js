@@ -42,7 +42,7 @@ define([
         var t = new tagging.CellTag(cell);
         cell_tags.push(t);
         t.createElement(function(child) {
-            cell.element.append(child);
+            cell.element.append(child.addClass('nbtags-cell-base'));
             tagging.check_content(t);
         });
         if (visible) {

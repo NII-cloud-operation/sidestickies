@@ -1,11 +1,9 @@
 .nbtags-base {
     position: absolute;
-    right: -1em;
     z-index: 100;
 }
 
 .list_item .nbtags-base {
-    right: -4em;
     top: 0em;
 }
 
@@ -16,6 +14,14 @@
     background: #f4f4f4;
     border-right: solid 6px #ccc;
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.33);
+}
+
+.nbtags-tree-base {
+    right: -1em;
+}
+
+.nbtags-cell-base {
+    right: -1em;
 }
 
 .nbtags-notebook-base {

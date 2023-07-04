@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 import sys
 
@@ -12,10 +12,9 @@ with open(os.path.join(HERE, 'nbtags', '_version.py')) as f:
 setup_args = dict(name='lc-nbtags',
                   version=VERSION_NS['__version__'],
                   description='tagging extension for Jupyter Notebook',
-                  packages=['nbtags'],
-                  package_dir={'nbtags': 'nbtags'},
-                  package_data={'nbtags': ['nbextension/*']},
+                  packages=find_packages(),
                   include_package_data=True,
+                  zip_safe=False,
                   platforms=['Jupyter Notebook 5.x', 'Jupyter Notebook 6.x'],
                   install_requires=['notebook>=6.5.4'])
 
