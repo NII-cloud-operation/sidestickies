@@ -3,9 +3,8 @@ define([
     'jquery',
     'require',
     'base/js/events',
-    'services/config',
     './tagging'
-], function(Jupyter, $, require, events, configmod, tagging) {
+], function(Jupyter, $, require, events, tagging) {
     "use strict";
 
     var mod_name = 'NBTags';
@@ -78,7 +77,7 @@ define([
         }
         var old_val = md[key];
         md[key] = value;
-        if (typeof _ !== undefined ? !_.isEqual(value, old_val) : old_val != value) {
+        if (old_val != value) {
             Jupyter.notebook.set_dirty();
         }
         return value;

@@ -1,6 +1,13 @@
-from notebook.utils import url_path_join
-from . import handler
-
+from . import server
+try:
+    from ._version import __version__
+except ImportError:
+    # Fallback when using the package in dev mode without installing
+    # in editable mode with pip. It is highly recommended to install
+    # the package from a stable release or in editable mode: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
+    import warnings
+    warnings.warn("Importing 'nbtags' outside a proper installation.")
+    __version__ = "dev"
 
 # nbextension
 def _jupyter_nbextension_paths():
@@ -16,38 +23,17 @@ def _jupyter_nbextension_paths():
         require='nbtags/tree')
     return [notebook_ext, tree_ext]
 
-
 # server extension
 def _jupyter_server_extension_paths():
     return [dict(
         module='nbtags'
     )]
 
-
 def load_jupyter_server_extension(nb_app):
-    nb_app.log.info('Loaded server extension nbtags')
+    server.register_routes(nb_app)
 
-    host_pattern = '.*$'
-    c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
-                                    r'/nbtags/(?P<target>cell|notebook)/(?P<meme>[A-Za-z0-9\-]+)')
-    nb_app.web_app.add_handlers(host_pattern, [
-        (c_route_pattern, handler.TagsHandler, dict(nb_app=nb_app))
-    ])
-
-    c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
-                                    r'/nbtags/cell')
-    nb_app.web_app.add_handlers(host_pattern, [
-        (c_route_pattern, handler.CellCreateURLHandler, dict(nb_app=nb_app))
-    ])
-
-    c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
-                                    r'/nbtags/notebook')
-    nb_app.web_app.add_handlers(host_pattern, [
-        (c_route_pattern, handler.NotebookCreateURLHandler, dict(nb_app=nb_app))
-    ])
-
-    c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
-                                    r'/nbtags/notebook/(?P<path>.+\.ipynb)/meme')
-    nb_app.web_app.add_handlers(host_pattern, [
-        (c_route_pattern, handler.NotebookMemeHandler, dict(nb_app=nb_app))
-    ])
+def _jupyter_labextension_paths():
+    return [{
+        "src": "labextension",
+        "dest": "sidestickies"
+    }]

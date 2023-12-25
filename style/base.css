@@ -1,0 +1,104 @@
+/*
+    See the JupyterLab Developer Guide for useful CSS Patterns:
+
+    https://jupyterlab.readthedocs.io/en/stable/developer/css.html
+*/
+
+.nbtags-widget-root {
+    overflow: visible;
+}
+
+.nbtags-base {
+    position: absolute;
+    z-index: 100;
+}
+
+.list_item .nbtags-base {
+    top: 0em;
+}
+
+.nbtags-tag {
+    padding: 0.5em 1em;
+    margin: 1em 0;
+    font-size: 0.8em;
+    background: #f4f4f4;
+    border-right: solid 6px #ccc;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.33);
+}
+
+.nbtags-tree-base {
+    right: -1em;
+    top: -1.6em;
+}
+
+#menu-panel-wrapper .nbtags-tree-base {
+    bottom: -0.5em;
+    left: 1em;
+    right: auto;
+    top: auto;
+}
+
+.nbtags-cell-base {
+    right: -1em;
+    bottom: -1em;
+}
+
+.nbtags-notebook-base {
+    top: 8.5em;
+    left: 0em;
+    position: fixed;
+}
+
+.nbtags-refresh {
+    margin-right: 0.5em;
+}
+
+.nbtags-refresh.fa-spin {
+    color: #bbb;
+}
+
+.nbtags-has-page {
+    border-right: solid 6px #5bb7ae;
+}
+
+.nbtags-tree-base .nbtags-has-page {
+    border-right: solid 6px #4169e1;
+}
+
+.list_item .nbtags-has-page {
+    border-right: solid 6px #4169e1;
+}
+
+.nbtags-notebook-base .nbtags-has-page {
+    border-right: solid 6px #4169e1;
+}
+
+.nbtags-tag p {
+    margin: 0;
+    padding: 0;
+}
+
+.nbtags-tag * {
+    color: #999;
+}
+
+.nbtags-tag .item_name {
+    text-wrap: nowrap;
+}
+
+.nbtags-has-page * {
+    color: #222;
+}
+
+.nbtags-error {
+    color: red;
+    font-weight: bold;
+}
+
+.sidestickies-comment-visible .sidestickies-comment-toggle {
+    background-color: #bbb;
+}
+
+.jp-ToolbarButton.sidestickies-comment-visible {
+    background-color: #bbb;
+}

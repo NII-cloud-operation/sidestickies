@@ -3,10 +3,12 @@ FROM jupyter/scipy-notebook:latest
 USER root
 
 RUN pip install --no-cache jupyter_nbextensions_configurator \
-    git+https://github.com/NII-cloud-operation/Jupyter-LC_nblineage.git
+    git+https://github.com/miya-biz/Jupyter-LC_nblineage.git@lab4.x_squash
 
 COPY . /tmp/nbtags
 RUN pip install --no-cache /tmp/nbtags
+
+RUN jupyter labextension enable nbtags
 
 RUN mkdir /opt/nbtags && \
     cp /tmp/nbtags/example/config.py.template \
@@ -23,6 +25,3 @@ RUN jupyter nbclassic-extension install --py jupyter_nbextensions_configurator -
     jupyter nbclassic-serverextension enable --py --user nbtags && \
     jupyter nbclassic-extension enable --py --user nbtags && \
     jupyter nblineage quick-setup --user
-
-# Make classic notebook the default
-ENV DOCKER_STACKS_JUPYTER_CMD=nbclassic

@@ -1,0 +1,15 @@
+{
+    "jupyter.lab.shortcuts": [],
+    "title": "sidestickies",
+    "description": "sidestickies settings.",
+    "type": "object",
+    "properties": {
+        "notebookCommentVisible": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to show the notebook comment."
+        }
+    },
+    "additionalProperties": false
+  }
+  
