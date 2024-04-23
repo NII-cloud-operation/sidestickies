@@ -28,9 +28,13 @@ class EpWeaveAPI(BaseAPI):
         resp = await http_client.fetch(req, raise_error=True)
         self.log.info(f'Result: {resp.body}')
         r = json.loads(resp.body)
-        if len(r) == 0:
+        if 'docs' not in r:
+            raise ValueError('Invalid response(docs missing): {}'.format(r))
+        docs = r['docs']
+        if len(docs) == 0:
             return None
-        pad = self._get_pad_with_title(meme, r)
+        num_found = r['numFound']
+        pad = self._get_pad_with_title(meme, docs)
         desc = pad['title']
         if desc == meme and 'shorttext' in pad:
             desc = pad['shorttext'].split('\n')[0]
@@ -40,7 +44,7 @@ class EpWeaveAPI(BaseAPI):
                 'page_url': self._endpoint('p/' + pad['id']),
                 'title': pad['title'],
                 'has_code': False,
-                'count': len(r),
+                'count': num_found,
             },
         }
 
