@@ -47,7 +47,7 @@ define([
             if (itemElement.find('.nbtags-base').length === 0) {
                 console.log(log_prefix, 'Reattachment', contentPath, itemName);
                 t.createElement(function(child) {
-                    itemElement.append(child);
+                    itemElement.append(child.addClass('nbtags-tree-base'));
                     if (t.cachedJSON) {
                         t.updateContent(t.cachedJSON);
                     } else {
@@ -68,7 +68,7 @@ define([
             var t = cached[0];
             tags.push(t);
             t.createElement(function(child) {
-                item.find('.col-md-12').append(child);
+                item.find('.col-md-12').append(child.addClass('nbtags-tree-base'));
                 if (t.cachedJSON) {
                     t.updateContent(t.cachedJSON);
                 } else {
@@ -84,7 +84,7 @@ define([
             tags.push(t);
             cached_tags.push(t);
             t.createElement(function(child) {
-                item.find('.col-md-12').append(child);
+                item.find('.col-md-12').append(child.addClass('nbtags-tree-base'));
                 tagging.check_content(t);
             });
             if (visible) {

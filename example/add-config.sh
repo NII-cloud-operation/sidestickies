@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -xe
+
 TARGET_CONFIG=/etc/jupyter/jupyter_notebook_config.py
 
 if [[ -f /opt/nbtags/config.py ]] ; then

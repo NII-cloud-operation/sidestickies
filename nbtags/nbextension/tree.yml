@@ -5,4 +5,5 @@ Description: "Sticky Note for Jupyter Notebook"
 Link: README.md
 Icon: tree.png
 Main: tree.js
-Compatibility: 5.x 6.x
+# 1.x means nbclassic - leave 6.x in place just in case.
+Compatibility: 1.x 6.x
