@@ -1,7 +1,7 @@
 from . import handler
 
 def register_routes(nb_app):
-    from notebook.utils import url_path_join
+    from jupyter_server.utils import url_path_join
     nb_app.log.info('Loaded server extension nbtags')
 
     host_pattern = '.*$'
