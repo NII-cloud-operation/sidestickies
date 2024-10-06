@@ -54,10 +54,9 @@ RUN mkdir -p /opt/nbtags/original/bin/ && \
     cp /tmp/nbtags/example/jupyterhub-singleuser /opt/conda/bin/ && \
     cp /tmp/nbtags/example/jupyter-notebook /opt/conda/bin/ && \
     cp /tmp/nbtags/example/jupyter-lab /opt/conda/bin/ && \
-    cp /tmp/nbtags/example/run-hook.sh /opt/nbtags/bin/ && \
-    cp /tmp/nbtags/example/run-ep-proxy.sh /opt/nbtags/bin/ && \
+    cp /tmp/nbtags/example/run-*.sh /opt/nbtags/bin/ && \
     chmod +x /opt/conda/bin/jupyterhub-singleuser /opt/conda/bin/jupyter-notebook /opt/conda/bin/jupyter-lab \
-        /opt/nbtags/bin/run-hook.sh /opt/nbtags/bin/run-ep-proxy.sh
+        /opt/nbtags/bin/run-*.sh
 
 RUN mkdir /opt/etherpad && chown jovyan:users -R /opt/etherpad /tmp/nbtags/example/ep_weave/
 

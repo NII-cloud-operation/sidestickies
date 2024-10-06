@@ -655,7 +655,7 @@
       "padSerializer": "ep_weave/lib/serializer"
     },
     "ep_weave": {
-      "basePath": "/ep_weave"
+      "basePath": "${EP_WEAVE_BASE_PATH:/ep_weave}"
     }
   }
   
