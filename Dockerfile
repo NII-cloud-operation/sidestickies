@@ -25,13 +25,15 @@ ENV SOLR_USER="jovyan" \
 RUN chown jovyan:users -R /var/solr /var/log/nginx /var/lib/nginx
 
 RUN pip install --no-cache jupyter_nbextensions_configurator \
-    git+https://github.com/NII-cloud-operation/Jupyter-LC_nblineage.git@feature/lab
+    git+https://github.com/NII-cloud-operation/Jupyter-LC_nblineage.git@feature/lab \
+    git+https://github.com/NII-cloud-operation/Jupyter-LC_index.git@feature/lab
 
 COPY . /tmp/nbtags
 RUN pip install --no-cache /tmp/nbtags jupyter-server-proxy && \
     jupyter server extension enable --sys-prefix jupyter_server_proxy
 
-RUN jupyter labextension enable nbtags
+RUN jupyter labextension enable nbtags && \
+    jupyter labextension enable lc_index
 
 RUN mkdir /opt/nbtags && \
     cp /tmp/nbtags/example/config.py.template \
@@ -43,7 +45,8 @@ RUN mkdir /opt/nbtags && \
     cp /tmp/nbtags/example/99-run-supervisor.sh /usr/local/bin/before-notebook.d/ && \
     chmod +x /usr/local/bin/before-notebook.d/*.sh && \
     cp /tmp/nbtags/example/supervisor.conf /opt/nbtags/ && \
-    cp /tmp/nbtags/example/nginx-ep-proxy.conf.template /opt/nbtags/
+    cp /tmp/nbtags/example/nginx-ep-proxy.conf.template /opt/nbtags/ && \
+    mkdir -p /jupyter_notebook_config.d && chown jovyan:users /jupyter_notebook_config.d
 
 # Boot scripts to perform /usr/local/bin/before-notebook.d/* on JupyterHub
 RUN mkdir -p /opt/nbtags/original/bin/ && \
@@ -83,6 +86,9 @@ RUN npm install -g pnpm && \
     pnpm run plugins i ${ETHERPAD_PLUGINS} && \
     pnpm run plugins i ${ETHERPAD_LOCAL_PLUGINS:+--path ${ETHERPAD_LOCAL_PLUGINS}} && \
     cp /tmp/nbtags/example/etherpad-settings.json settings.json
+
+RUN cp -fr /tmp/nbtags/example/notebooks/* /home/$NB_USER/ && \
+    cp /tmp/nbtags/README.md /home/$NB_USER/
 
 RUN jupyter nbclassic-extension install --py jupyter_nbextensions_configurator --user && \
     jupyter nbclassic-extension enable --py jupyter_nbextensions_configurator --user && \
