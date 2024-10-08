@@ -88,6 +88,7 @@ RUN npm install -g pnpm && \
     cp /tmp/nbtags/example/etherpad-settings.json settings.json
 
 RUN cp -fr /tmp/nbtags/example/notebooks/* /home/$NB_USER/ && \
+    cp /tmp/nbtags/images/* /home/$NB_USER/images/ && \
     cp /tmp/nbtags/README.md /home/$NB_USER/
 
 RUN jupyter nbclassic-extension install --py jupyter_nbextensions_configurator --user && \
