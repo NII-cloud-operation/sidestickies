@@ -19,6 +19,15 @@ export class NotebookTagWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
+    // files other than notebooks
+    console.log(
+      'Initializing NotebookTagWidget',
+      this.path,
+      this.notebookPanel
+    );
+    if (/\.ipynb$/.test(this.path.toLowerCase()) === false) {
+      return <div />;
+    }
     return (
       <div className="nbtags-base nbtags-tree-base">
         <NotebookTag

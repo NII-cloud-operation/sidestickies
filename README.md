@@ -1,16 +1,39 @@
 # sidestickies - Collaborative Annotation for Jupyter Notebook
 
-[![Github Actions Status](https://github.com/NII-cloud-operation/sidestickies/workflows/Build/badge.svg)](https://github.com/NII-cloud-operation/sidestickies/actions/workflows/build.yml)
+[![Release](https://github.com/NII-cloud-operation/sidestickies/actions/workflows/release.yml/badge.svg)](https://github.com/NII-cloud-operation/sidestickies/actions/workflows/release.yml) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NII-cloud-operation/sidestickies/feature/lab?urlpath=lab)
+
 Sidestickies Jupyter Extension
 
-*sidestickies* is a notebook extension, which enables to attach sticky notes to each cell utilizing Scrapbox https://scrapbox.io or Etherpad https://etherpad.org/.
+*sidestickies* is a notebook extension, which enables to attach sticky notes to each cell utilizing Etherpad https://etherpad.org/ or Scrapbox https://scrapbox.io.
 
 Jupyter notebook's narrative stories are efficient to share workflows and activities of researchers, educators, engineers, and other practitioners for reproducible computing. The notebooks are crucial tools both for describing and capturing a series of related events, results, or the like as narratives, in ether prospective or retrospective cases.
 However, it is not sufficient enough because those narratives mainly focus on the subjects and stories within the notebook itself. We would like to have separate channels for meta-, side-, and reflective-communications, which are well-known use cases for sticky notes.
 
+## Try it out on mybinder.org
+
+You can try out the extension on mybinder.org by clicking the Binder badge above, and refer to the [Usage](#usage) section for more information.
+
+The following software is installed in this environment.
+
+- Services
+  - JupyterLab
+  - Jupyter Notebook 7
+  - [ep_weave](https://github.com/NII-cloud-operation/ep_weave)
+  - [Apache Solr](https://solr.apache.org/)
+
+- Extensions
+  - sidestickies
+  - [nblineage](https://github.com/NII-cloud-operation/Jupyter-LC_nblineage)
+
+If you enable the extension by clicking the "Sidestickies" button on the toolbar, sticky notes will appear on the cells and notebooks.
+Please refer to the [Usage](#usage) section for more information.
+
+> **Note**: It may take some time for ep_weave to start up. If your search fails, please wait a while and try again.
+
 ## Requirements
 
 - JupyterLab >= 4.0.0
+- Jupyter Notebook >= 7.0.0
 
 ## Prerequisites
 
@@ -27,14 +50,13 @@ To use sidestickies, you should enable both serverextension and nbextension.
 
 ```
 pip install git+https://github.com/NII-cloud-operation/sidestickies.git
-```
+jupyter server extension enable nbtags
+jupyter labextension enable nbtags
 
-*TBD*
-
-```
-jupyter nbclassic-extension install --py nbtags
-jupyter server extension enable --py nbtags
-jupyter nbclassic-extension enable --py nbtags
+# If you want to use the extension with the classic notebook,
+# you need to install and enable the nbclassic notebook extension.
+jupyter nbclassic-extension install --py --sys-prefix nbtags
+jupyter nbclassic-extension enable --py --sys-prefix nbtags
 ```
 
 ## Configure sidestickies
@@ -83,23 +105,15 @@ services:
 
 Then use docker-compose command to start the service. It will be accessible with your API KEY.
 
-## Binder
-https://mybinder.org/v2/gh/NII-cloud-operation/Jupyter-LC_docker/sc-demo then open "EN02_Collaborative_Annotation.ipynb" and/or "JP03_Notebookを介したコミュニケーション.ipynb"
-## Install
 
-To install the extension, execute:
+## Usage
 
-```bash
-pip install nbtags
-```
+When you enable the sidestickies extension, "Sidestickies" toggles will appear in the toolbars of the file tree pane and Notebook editor pane and
+sticky notes can be toggled on and off by clicking the Sidestickies button in the toolbar.
+By clicking sticky notes on the cells and notebooks, you can add, edit, and view sticky notes.
 
-## Uninstall
+![./images/add-sticky-note.gif](./images/add-sticky-note.gif)
 
-To remove the extension, execute:
-
-```bash
-pip uninstall nbtags
-```
 
 ## Contributing
 

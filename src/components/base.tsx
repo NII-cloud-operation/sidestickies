@@ -41,7 +41,7 @@ export const Tag: React.FC<Props> = ({
     }
     getMEME()
       .then(meme => {
-        if (comment?.meme !== meme?.current) {
+        if (!comment) {
           if (!onCreate) {
             return;
           }

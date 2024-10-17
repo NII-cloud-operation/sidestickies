@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { Cell } from '@jupyterlab/cells';
 import { INotebookModel } from '@jupyterlab/notebook';
+import { IBaseCellMetadata } from '@jupyterlab/nbformat';
 import { TaggedComment, MEME } from './types';
 import { Tag } from './base';
 import { ITagLoader } from './loader';
@@ -27,14 +28,25 @@ export const CellTag: React.FC<Props> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
+  const [latestMetadata, setLatestMetadata] = useState<Omit<
+    IBaseCellMetadata,
+    'trusted'
+  > | null>(null);
+
+  const metadata = useMemo(() => {
+    if (latestMetadata) {
+      return latestMetadata;
+    }
+    return cell.model.metadata;
+  }, [cell, latestMetadata]);
 
   const meme = useMemo(() => {
-    const { metadata } = cell.model;
     if (!metadata) {
       return null;
     }
     return metadata['lc_cell_meme'] as MEME;
-  }, [cell]);
+  }, [metadata]);
+
   const getMEME = useCallback(() => {
     return new Promise<MEME | null>(resolve => {
       resolve(meme);
@@ -75,6 +87,14 @@ export const CellTag: React.FC<Props> = ({
     }
     refresh();
   }, [loader, meme, visible]);
+
+  useEffect(() => {
+    cell.model.metadataChanged.connect(() => {
+      const { metadata } = cell.model;
+      setLatestMetadata(metadata);
+    });
+  }, [cell]);
+
   useEffect(() => {
     setVisible(commentIsVisible(notebook));
     notebook.metadataChanged.connect(() => {

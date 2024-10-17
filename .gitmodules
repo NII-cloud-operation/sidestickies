@@ -1,0 +1,3 @@
+[submodule "example/ep_weave"]
+	path = example/ep_weave
+	url = https://github.com/NII-cloud-operation/ep_weave.git

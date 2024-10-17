@@ -119,8 +119,11 @@ export const NotebookTag: React.FC<Props> = ({
 
   const getContent = useCallback(async () => {
     const resp = await requestAPI<MEMEResponse>(`notebook/${path}/meme`);
+    const memeCurrent = {
+      current: resp.meme.current
+    };
     return JSON.stringify({
-      meme: resp.meme,
+      meme: memeCurrent,
       toc: normalizeTOC(resp.toc)
     });
   }, [path]);
