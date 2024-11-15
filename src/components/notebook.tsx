@@ -118,7 +118,8 @@ export const NotebookTag: React.FC<Props> = ({
   }, [loader, meme, onError]);
 
   const getContent = useCallback(async () => {
-    const resp = await requestAPI<MEMEResponse>(`notebook/${path}/meme`);
+    const encodedPath = encodeURIComponent(path || '');
+    const resp = await requestAPI<MEMEResponse>(`notebook/${encodedPath}/meme`);
     const memeCurrent = {
       current: resp.meme.current
     };
