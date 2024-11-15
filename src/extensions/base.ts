@@ -104,7 +104,8 @@ export class BaseMEMELoader implements IMEMELoader {
         this.requestFetcher();
       }, 0);
     };
-    requestAPI<any>(`notebook/${path}/meme`)
+    const encodedPath = encodeURIComponent(path || '');
+    requestAPI<any>(`notebook/${encodedPath}/meme`)
       .then(result => {
         resolve(result);
         nextFetcher();
