@@ -19,4 +19,13 @@ if [ ! -z "$WAIT_FOR_EP_WEAVE_READY" ]; then
     fi
 fi
 
+# For nbsearch - initial index update
+while ! nc -z localhost 9000; do
+  sleep 0.5
+done
+while ! curl http://localhost:8983/solr/jupyter-cell/admin/ping | grep '"status":"OK"'; do
+  sleep 0.5
+done
+jupyter nbsearch update-index --debug $CONDA_DIR/etc/jupyter/jupyter_notebook_config.py local
+
 export SUPERVISOR_INITIALIZED=1

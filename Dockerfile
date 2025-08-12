@@ -1,6 +1,6 @@
 FROM solr:8 AS solr
 
-FROM quay.io/jupyter/scipy-notebook:latest
+FROM quay.io/jupyter/scipy-notebook:notebook-7.4.5
 
 USER root
 
@@ -14,9 +14,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 ENV NPM_CONFIG_PREFIX=/.npm
 ENV PATH=/.npm/bin/:${PATH}
 
-# Install OpenJDK and other dependencies
+# Install OpenJDK and other dependencies (including nbsearch dependencies)
 RUN apt-get update && apt-get install -yq supervisor openjdk-11-jre \
     nginx gnupg curl gettext-base netcat-traditional \
+    lsyncd uuid-runtime tinyproxy \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -32,11 +33,18 @@ ENV SOLR_USER="jovyan" \
     SOLR_PID_DIR=/var/solr \
     SOLR_LOGS_DIR=/var/solr/logs \
     LOG4J_PROPS=/var/solr/log4j2.xml
-RUN chown jovyan:users -R /var/solr /var/log/nginx /var/lib/nginx
+RUN chown jovyan:users -R /var/solr /var/log/nginx /var/lib/nginx /run/tinyproxy
+
+# MINIO for nbsearch
+ENV MINIO_ACCESS_KEY=nbsearchak MINIO_SECRET_KEY=nbsearchsk
+RUN mkdir -p /opt/minio/bin/ && \
+    curl -L https://dl.min.io/server/minio/release/linux-amd64/minio > /opt/minio/bin/minio && \
+    chmod +x /opt/minio/bin/minio && mkdir -p /var/minio && chown jovyan:users -R /var/minio
 
 RUN pip install --no-cache jupyter_nbextensions_configurator \
     git+https://github.com/NII-cloud-operation/Jupyter-LC_nblineage.git@feature/lab \
-    git+https://github.com/NII-cloud-operation/Jupyter-LC_index.git@feature/lab
+    git+https://github.com/NII-cloud-operation/Jupyter-LC_index.git@feature/lab \
+    git+https://github.com/NII-cloud-operation/nbsearch.git@feature/lab
 
 COPY . /tmp/nbtags
 RUN pip install --no-cache /tmp/nbtags jupyter-server-proxy && \
@@ -56,7 +64,12 @@ RUN mkdir /opt/nbtags && \
     chmod +x /usr/local/bin/before-notebook.d/*.sh && \
     cp /tmp/nbtags/example/supervisor.conf /opt/nbtags/ && \
     cp /tmp/nbtags/example/nginx-ep-proxy.conf.template /opt/nbtags/ && \
-    mkdir -p /jupyter_notebook_config.d && chown jovyan:users /jupyter_notebook_config.d
+    cp /tmp/nbtags/example/nbsearch-update-index.lua /opt/nbtags/ && \
+    cp /tmp/nbtags/example/nbsearch-update-index /usr/local/bin/update-index && \
+    chmod +x /usr/local/bin/update-index && \
+    mkdir -p /jupyter_notebook_config.d && \
+    cp /tmp/nbtags/example/nbsearch_config.py /jupyter_notebook_config.d/ && \
+    chown -R jovyan:users /jupyter_notebook_config.d
 
 # Boot scripts to perform /usr/local/bin/before-notebook.d/* on JupyterHub
 RUN mkdir -p /opt/nbtags/original/bin/ && \
@@ -109,5 +122,14 @@ RUN jupyter nbclassic-extension install --py jupyter_nbextensions_configurator -
     jupyter nbclassic-extension enable --py --user nbtags && \
     jupyter nblineage quick-setup --user
 
-# Create Solr schema
-RUN precreate-core pad /tmp/nbtags/example/ep_weave/solr/pad/
+# Enable nbsearch extensions
+RUN jupyter nbclassic-extension install --py --user nbsearch && \
+    jupyter nbclassic-serverextension enable --py --user nbsearch && \
+    jupyter nbclassic-extension enable --py --user nbsearch
+
+# Create Solr schemas for both ep_weave and nbsearch
+RUN precreate-core pad /tmp/nbtags/example/ep_weave/solr/pad/ && \
+    git clone -b feature/lab https://github.com/NII-cloud-operation/nbsearch.git /tmp/nbsearch-repo && \
+    precreate-core jupyter-notebook /tmp/nbsearch-repo/solr/jupyter-notebook/ && \
+    precreate-core jupyter-cell /tmp/nbsearch-repo/solr/jupyter-cell/ && \
+    rm -rf /tmp/nbsearch-repo

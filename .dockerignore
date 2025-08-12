@@ -1,0 +1,11 @@
+# Ignore pre-built extension files to force rebuild in Docker
+nbtags/labextension/
+lib/
+node_modules/
+*.egg-info/
+__pycache__/
+.git/
+.github/
+.vscode/
+*.pyc
+*.pyo

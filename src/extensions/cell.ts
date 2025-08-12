@@ -21,6 +21,9 @@ export class CellExtension
     panel: NotebookPanel,
     context: DocumentRegistry.IContext<INotebookModel>
   ): void | IDisposable {
+    // Keep track of initialized cells
+    const initializedCells = new Set<string>();
+
     panel.content.model?.cells.changed.connect((_, change) => {
       if (change.type === 'add') {
         change.newValues.forEach(cellModel => {
@@ -32,10 +35,15 @@ export class CellExtension
             if (!isAttached) {
               return;
             }
+            // Only initialize once per cell
+            if (initializedCells.has(cellModel.id)) {
+              return;
+            }
             if (!panel.content.model) {
               throw new Error('No notebook model');
             }
             initCell(panel.content.model, cell as Cell, this.loader);
+            initializedCells.add(cellModel.id);
           });
         });
       }
@@ -51,6 +59,11 @@ export class TagLoader extends BaseTagLoader {
 }
 
 function initCell(notebook: INotebookModel, cell: Cell, loader: ITagLoader) {
+  // Check if widget already exists to prevent duplicates
+  const existingWidget = cell.node.querySelector('.nbtags-widget-root');
+  if (existingWidget) {
+    return;
+  }
   Widget.attach(new CellTagWidget(notebook, cell, loader), cell.node);
 }
 
