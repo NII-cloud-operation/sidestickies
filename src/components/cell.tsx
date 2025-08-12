@@ -7,6 +7,22 @@ import { Tag } from './base';
 import { ITagLoader } from './loader';
 import { commentIsVisible } from './notebook';
 
+/**
+ * Extract markdown headings from source text
+ */
+function extractHeadings(source: string): string[] {
+  const lines = source.split('\n');
+  const headings: string[] = [];
+  for (const line of lines) {
+    // Match lines that start with one or more # followed by a space
+    const match = line.match(/^(#+)\s+(.+)/);
+    if (match) {
+      headings.push(line);
+    }
+  }
+  return headings;
+}
+
 type Props = {
   loader?: ITagLoader;
   notebook: INotebookModel;
@@ -61,9 +77,17 @@ export const CellTag: React.FC<Props> = ({
     if (!current) {
       return;
     }
+
+    // Extract headings from markdown cell
+    let headings: string[] | undefined;
+    if (cell.model.type === 'markdown') {
+      const source = cell.model.sharedModel.getSource();
+      headings = extractHeadings(source);
+    }
+
     setLoading(true);
     loader
-      .load(current)
+      .load(current, headings)
       .then(comment => {
         setComment(comment);
         setLoading(false);
@@ -79,7 +103,7 @@ export const CellTag: React.FC<Props> = ({
         }
         onError(error);
       });
-  }, [loader, meme]);
+  }, [loader, meme, cell]);
 
   useEffect(() => {
     if (!visible) {

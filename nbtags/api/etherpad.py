@@ -18,8 +18,22 @@ class EpWeaveAPI(BaseAPI):
     def __init__(self, **kwargs):
         super(EpWeaveAPI, self).__init__(**kwargs)
 
-    async def get_summary(self, meme):
-        url = self._endpoint('ep_weave/api/search?q={}'.format(urllib.parse.quote(f'hash:"#{meme}"', safe="")), api=True)
+    async def get_summary(self, meme, headings=None):
+        # Build Lucene query with OR operator
+        query_parts = [f'hash:"#{meme}"']
+
+        # Add heading queries if provided
+        if headings:
+            for heading in headings:
+                # Convert markdown heading to hashtag format
+                # "# Title" -> "#Title", "## Subtitle" -> "#Subtitle"
+                heading_tag = self._heading_to_hashtag(heading)
+                query_parts.append(f'hash:"{heading_tag}"')
+
+        # Join with OR operator
+        search_query = ' OR '.join(query_parts)
+
+        url = self._endpoint('ep_weave/api/search?q={}'.format(urllib.parse.quote(search_query, safe="")), api=True)
         http_client = AsyncHTTPClient()
         if self.apikey:
             req = HTTPRequest(url=f'{url}&apikey={self.apikey}')
@@ -47,6 +61,15 @@ class EpWeaveAPI(BaseAPI):
                 'count': num_found,
             },
         }
+
+    def _heading_to_hashtag(self, heading):
+        """Convert markdown heading to hashtag format
+        "# Title" -> "#Title"
+        "## Subtitle" -> "#Subtitle"
+        """
+        # Remove leading hashes and spaces, then add single hash
+        text = heading.lstrip('#').strip()
+        return f'#{text}'
 
     def _get_pad_with_title(self, meme, results):
         results_ = [r for r in results if 'title' in r and r['title'] != meme]

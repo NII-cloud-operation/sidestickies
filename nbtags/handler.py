@@ -23,15 +23,21 @@ class TagsHandler(BaseHandler):
     @web.authenticated
     async def get(self, target, meme):
         self.log.info('Tags: {}, {}'.format(target, meme))
-        summary, page_content, related = await self._get_tag_info(meme)
+        # Get optional headings parameter
+        headings = self.get_query_argument('headings', default=None)
+        if headings:
+            headings = json.loads(headings)
+            self.log.info('Headings: {}'.format(headings))
+
+        summary, page_content, related = await self._get_tag_info(meme, headings)
         if summary is None:
             meme, _ = parse_cell_id(meme)
-            summary, page_content, related = await self._get_tag_info(meme)
+            summary, page_content, related = await self._get_tag_info(meme, headings)
         await self.finish(dict(meme=meme, page=page_content, related_pages=related,
                                summary=summary))
 
-    async def _get_tag_info(self, meme):
-        r = await self._api.get_summary(meme)
+    async def _get_tag_info(self, meme, headings=None):
+        r = await self._api.get_summary(meme, headings=headings)
         if r is None:
             return None, None, None
         return r['summary'], r.get('page_content', None), r.get('related', None)

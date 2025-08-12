@@ -1,7 +1,7 @@
 import { TaggedComment } from './types';
 
 export interface ITagLoader {
-  load(meme: string): Promise<TaggedComment>;
+  load(meme: string, headings?: string[]): Promise<TaggedComment>;
 }
 
 export interface IMEMELoader {
