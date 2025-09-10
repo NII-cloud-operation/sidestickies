@@ -106,6 +106,16 @@ class NotebookMemeHandler(BaseHandler):
         self.finish(dict(meme=meme, toc=toc, path=path))
 
 
+class ConfigHandler(BaseHandler):
+    @web.authenticated
+    def get(self):
+        sidestickies_api = self._api
+        backend_api = sidestickies_api._api
+        api_type = backend_api.__class__.__name__
+        ep_weave_url = getattr(backend_api, 'url', None)
+        self.finish({'api_type': api_type, 'ep_weave_url': ep_weave_url})
+
+
 def parse_cell_id(cell_id):
     parts = cell_id.split('-')
     return '-'.join(parts[:5]), '-'.join(parts[5:])

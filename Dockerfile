@@ -53,7 +53,7 @@ RUN pip install --no-cache /tmp/nbtags jupyter-server-proxy && \
 RUN jupyter labextension enable nbtags && \
     jupyter labextension enable lc_index
 
-RUN mkdir /opt/nbtags && \
+RUN mkdir -p /opt/nbtags/bin && \
     cp /tmp/nbtags/example/config.py.template \
        /opt/nbtags/config.py.template && \
     cp /tmp/nbtags/example/config.default.py \
@@ -66,14 +66,14 @@ RUN mkdir /opt/nbtags && \
     cp /tmp/nbtags/example/nginx-ep-proxy.conf.template /opt/nbtags/ && \
     cp /tmp/nbtags/example/nbsearch-update-index.lua /opt/nbtags/ && \
     cp /tmp/nbtags/example/nbsearch-update-index /usr/local/bin/update-index && \
-    chmod +x /usr/local/bin/update-index && \
+    cp /tmp/nbtags/example/build-index.sh /opt/nbtags/bin/ && \
+    chmod +x /usr/local/bin/update-index /opt/nbtags/bin/build-index.sh && \
     mkdir -p /jupyter_notebook_config.d && \
     cp /tmp/nbtags/example/nbsearch_config.py /jupyter_notebook_config.d/ && \
     chown -R jovyan:users /jupyter_notebook_config.d
 
 # Boot scripts to perform /usr/local/bin/before-notebook.d/* on JupyterHub
 RUN mkdir -p /opt/nbtags/original/bin/ && \
-    mkdir -p /opt/nbtags/bin/ && \
     mv /opt/conda/bin/jupyterhub-singleuser /opt/nbtags/original/bin/jupyterhub-singleuser && \
     mv /opt/conda/bin/jupyter-notebook /opt/nbtags/original/bin/jupyter-notebook && \
     mv /opt/conda/bin/jupyter-lab /opt/nbtags/original/bin/jupyter-lab && \
