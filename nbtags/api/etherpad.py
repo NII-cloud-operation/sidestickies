@@ -61,15 +61,32 @@ class EpWeaveAPI(BaseAPI):
         shorttext = pad.get('shorttext')
         if shorttext and (desc == meme or desc in heading_titles):
             desc = shorttext.split('\n')[0]
-        return {
-            'summary': {
-                'description': desc,
-                'page_url': self._endpoint('p/' + pad['id']),
-                'title': pad['title'],
+
+        alternatives = []
+        for doc in docs:
+            doc_title = doc.get('title')
+            doc_id = doc.get('id')
+            if not doc_title or not doc_id:
+                continue
+            doc_short = doc.get('shorttext')
+            doc_desc = doc_short.split('\n')[0] if doc_short else ''
+            alternatives.append({
+                'title': doc_title,
+                'description': doc_desc,
+                'page_url': self._endpoint('p/' + doc_id),
                 'has_code': False,
-                'count': num_found,
-            },
+            })
+
+        summary = {
+            'description': desc,
+            'page_url': self._endpoint('p/' + pad['id']),
+            'title': pad['title'],
+            'has_code': False,
+            'count': num_found,
         }
+        if alternatives:
+            summary['alternatives'] = alternatives
+        return {'summary': summary}
 
     def _heading_to_hashtag(self, heading):
         """Convert markdown heading to hashtag format

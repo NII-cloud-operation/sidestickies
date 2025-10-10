@@ -102,3 +102,53 @@
 .jp-ToolbarButton.sidestickies-comment-visible {
     background-color: #bbb;
 }
+
+.nbtags-comment-options {
+    margin-top: 0.5em;
+    padding: 0.5em;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nbtags-comment-options__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+}
+
+.nbtags-comment-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0.4em 0.6em;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    color: #222;
+}
+
+.nbtags-comment-option:hover,
+.nbtags-comment-option:focus {
+    background: #f0f0f0;
+    outline: none;
+}
+
+.nbtags-comment-option__title {
+    font-weight: 600;
+}
+
+.nbtags-comment-option__desc {
+    margin-top: 0.2em;
+    font-size: 0.85em;
+    color: #555;
+}
+
+.nbtags-comment-option--create {
+    margin-top: 0.5em;
+    font-weight: 600;
+    color: #0072b2;
+}
