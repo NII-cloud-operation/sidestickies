@@ -185,14 +185,19 @@ class FileBrowserExtension implements IDisposable {
   }
 
   updateFiles() {
-    if (this.files !== null && this.files.length > 0) {
-      return;
+    if (this.files === null) {
+      this.files = [];
     }
+    const files = this.files;
     const elements = this.browser.node.querySelectorAll(
       'li.jp-DirListing-item'
     );
-    const files: FileNode[] = [];
     elements.forEach(element => {
+      if (element.hasAttribute('data-sidestickies-attached')) {
+        return;
+      }
+      element.setAttribute('data-sidestickies-attached', 'true');
+
       const fileNode = new FileNode(
         this.settings,
         element,
@@ -201,10 +206,7 @@ class FileBrowserExtension implements IDisposable {
         this.loader
       );
       files.push(fileNode);
-    });
-    this.files = files;
-    files.forEach(file => {
-      file.attach();
+      fileNode.attach();
     });
   }
 

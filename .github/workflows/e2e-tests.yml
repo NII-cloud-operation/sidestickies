@@ -1,0 +1,95 @@
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  notebook-e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('ui-tests/e2e-notebook/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: |
+          set -euxo pipefail
+          pip install --upgrade pip
+          pip install -r ui-tests/e2e-notebook/requirements.txt
+
+      - name: Install Playwright browsers
+        run: |
+          set -euxo pipefail
+          python -m playwright install --with-deps
+
+      - name: Build Docker image
+        run: |
+          set -euxo pipefail
+          docker build -t sidestickies:test .
+
+      - name: Start sidestickies container
+        run: |
+          set -euxo pipefail
+          mkdir -p ui-tests/e2e-notebook/artifacts
+          docker run -d \
+            --name sidestickies-test \
+            -p 8888:8888 \
+            sidestickies:test \
+            start-notebook.sh --ServerApp.token='test-token' --ServerApp.allow_origin='*'
+          sleep 30
+          # Health check
+          curl --retry 10 --retry-delay 5 --retry-connrefused --fail http://localhost:8888/lab?token=test-token || (docker logs sidestickies-test && exit 1)
+
+      - name: Run notebook E2E tests
+        env:
+          E2E_TRANSITION_TIMEOUT: '30000'
+          E2E_DEFAULT_DELAY: '200'
+          JUPYTERLAB_URL: 'http://localhost:8888/lab?token=test-token'
+          NOTEBOOK7_URL: 'http://localhost:8888/tree?token=test-token'
+          SIDESTICKIES_CONTAINER_NAME: 'sidestickies-test'
+        run: |
+          set -euxo pipefail
+          python ui-tests/e2e-notebook/run_notebooks.py
+
+      - name: Gather Docker logs
+        if: always()
+        run: |
+          set -euxo pipefail
+          mkdir -p ui-tests/e2e-notebook/artifacts
+          docker logs sidestickies-test > ui-tests/e2e-notebook/artifacts/sidestickies-container.log 2>&1 || true
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            ui-tests/e2e-notebook/artifacts
+
+      - name: Shutdown container
+        if: always()
+        run: |
+          set -euxo pipefail
+          docker stop sidestickies-test || true
+          docker rm sidestickies-test || true
