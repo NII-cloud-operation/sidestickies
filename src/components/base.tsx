@@ -121,18 +121,33 @@ export const Tag: React.FC<Props> = ({
           className={`fa fa-refresh  nbtags-refresh ${
             loading ? 'fa-spin' : ''
           }`}
-          onClick={onRefresh}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onRefresh) onRefresh();
+          }}
         />
         {desc}
         {summary && (
           <>
-            <i className="fa fa-comments" onClick={handlePrimaryClick} />
+            <i
+              className="fa fa-comments"
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrimaryClick();
+              }}
+            />
             {summary.count}
           </>
         )}
         {!summary && (
           <>
-            <i className="fa fa-comments" onClick={onCreate} />
+            <i
+              className="fa fa-comments"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onCreate) onCreate();
+              }}
+            />
           </>
         )}
         {hasError && <span className="nbtags-error">!</span>}
