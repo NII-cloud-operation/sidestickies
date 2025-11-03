@@ -63,8 +63,11 @@ export class CellExtension
     });
     return new DisposableDelegate(() => {});
   }
-  
-  private initMarkdownHeadingInterceptor(panel: NotebookPanel, cell: MarkdownCell): void {
+
+  private initMarkdownHeadingInterceptor(
+    panel: NotebookPanel,
+    cell: MarkdownCell
+  ): void {
     this.ensureApiConfig()
       .then(() => {
         if (!this.epWeaveBaseUrl) {
@@ -76,7 +79,7 @@ export class CellExtension
         console.error('[Sidestickies] Failed to load API configuration', error);
       });
   }
-  
+
   private attachMarkdownHeadingObserver(
     panel: NotebookPanel,
     cell: MarkdownCell,
@@ -114,7 +117,7 @@ export class CellExtension
 
     updateLinks();
   }
-  
+
   private modifyMarkdownHeadings(
     cell: MarkdownCell,
     epWeaveBaseUrl: string,
@@ -124,19 +127,20 @@ export class CellExtension
     if (!renderedNode) {
       return;
     }
-    
+
     const headers = renderedNode.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    
+
     headers.forEach((header: Element) => {
       const headerElement = header as HTMLHeadingElement;
-      const headingText = headerElement.textContent?.replace('¶', '').trim() || '';
+      const headingText =
+        headerElement.textContent?.replace('¶', '').trim() || '';
       if (!headingText) {
         return;
       }
 
-      let epWeaveLink = header.querySelector('.ss-heading-link') as
-        | HTMLAnchorElement
-        | null;
+      let epWeaveLink = header.querySelector(
+        '.ss-heading-link'
+      ) as HTMLAnchorElement | null;
 
       if (!epWeaveLink) {
         // Create ep_weave link with Font Awesome icon
@@ -179,7 +183,10 @@ export class CellExtension
     });
   }
 
-  private buildEpWeaveUrl(epWeaveBaseUrl: string, headingText: string): string | null {
+  private buildEpWeaveUrl(
+    epWeaveBaseUrl: string,
+    headingText: string
+  ): string | null {
     const base = epWeaveBaseUrl.endsWith('/')
       ? epWeaveBaseUrl.slice(0, -1)
       : epWeaveBaseUrl;

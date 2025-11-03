@@ -121,7 +121,9 @@ export const NotebookTag: React.FC<Props> = ({
     const encodedPath = encodeURIComponent(path || '');
     const resp = await requestAPI<MEMEResponse>(`notebook/${encodedPath}/meme`);
     if (!resp.meme || !resp.meme.current) {
-      throw new Error('Notebook has not been saved yet. Please save the notebook first.');
+      throw new Error(
+        'Notebook has not been saved yet. Please save the notebook first.'
+      );
     }
     const memeCurrent = {
       current: resp.meme.current

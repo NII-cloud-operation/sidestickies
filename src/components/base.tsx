@@ -112,7 +112,15 @@ export const Tag: React.FC<Props> = ({
         openExistingComment(summary);
       })
       .catch(handleError);
-  }, [getMEME, summary, comment, handleCreate, hasAlternatives, openExistingComment, handleError]);
+  }, [
+    getMEME,
+    summary,
+    comment,
+    handleCreate,
+    hasAlternatives,
+    openExistingComment,
+    handleError
+  ]);
 
   return (
     <div className={`nbtags-tag ${desc !== null ? 'nbtags-has-page' : ''}`}>
@@ -121,9 +129,11 @@ export const Tag: React.FC<Props> = ({
           className={`fa fa-refresh  nbtags-refresh ${
             loading ? 'fa-spin' : ''
           }`}
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation();
-            if (onRefresh) onRefresh();
+            if (onRefresh) {
+              onRefresh();
+            }
           }}
         />
         {desc}
@@ -131,7 +141,7 @@ export const Tag: React.FC<Props> = ({
           <>
             <i
               className="fa fa-comments"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 handlePrimaryClick();
               }}
@@ -143,9 +153,11 @@ export const Tag: React.FC<Props> = ({
           <>
             <i
               className="fa fa-comments"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
-                if (onCreate) onCreate();
+                if (onCreate) {
+                  onCreate();
+                }
               }}
             />
           </>
@@ -162,9 +174,13 @@ export const Tag: React.FC<Props> = ({
                 key={`${option.title}-${option.page_url || 'no-url'}`}
                 onClick={() => handleSelectAlternative(option)}
               >
-                <span className="nbtags-comment-option__title">{option.title}</span>
+                <span className="nbtags-comment-option__title">
+                  {option.title}
+                </span>
                 {option.description && (
-                  <span className="nbtags-comment-option__desc">{option.description}</span>
+                  <span className="nbtags-comment-option__desc">
+                    {option.description}
+                  </span>
                 )}
               </button>
             ))}
