@@ -41,7 +41,7 @@ class EpWeaveAPI(BaseAPI):
         # Join with OR operator
         search_query = ' OR '.join(query_parts)
 
-        url = self._endpoint('ep_weave/api/search?q={}'.format(urllib.parse.quote(search_query, safe="")), api=True)
+        url = self._endpoint('ep_weave/api/search?q={}&sort=indexed%20desc'.format(urllib.parse.quote(search_query, safe="")), api=True)
         http_client = AsyncHTTPClient()
         if self.apikey:
             req = HTTPRequest(url=f'{url}&apikey={self.apikey}')
