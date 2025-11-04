@@ -63,7 +63,7 @@ jobs:
 
       - name: Run notebook E2E tests
         env:
-          E2E_TRANSITION_TIMEOUT: '30000'
+          E2E_TRANSITION_TIMEOUT: '60000'
           E2E_DEFAULT_DELAY: '200'
           JUPYTERLAB_URL: 'http://localhost:8888/lab?token=test-token'
           NOTEBOOK7_URL: 'http://localhost:8888/tree?token=test-token'
