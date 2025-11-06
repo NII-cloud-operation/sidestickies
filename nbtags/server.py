@@ -28,3 +28,9 @@ def register_routes(nb_app):
     nb_app.web_app.add_handlers(host_pattern, [
         (c_route_pattern, handler.NotebookMemeHandler, dict(nb_app=nb_app))
     ])
+
+    c_route_pattern = url_path_join(nb_app.web_app.settings['base_url'],
+                                    r'/nbtags/config')
+    nb_app.web_app.add_handlers(host_pattern, [
+        (c_route_pattern, handler.ConfigHandler, dict(nb_app=nb_app))
+    ])

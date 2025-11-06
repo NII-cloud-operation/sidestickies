@@ -120,6 +120,11 @@ export const NotebookTag: React.FC<Props> = ({
   const getContent = useCallback(async () => {
     const encodedPath = encodeURIComponent(path || '');
     const resp = await requestAPI<MEMEResponse>(`notebook/${encodedPath}/meme`);
+    if (!resp.meme || !resp.meme.current) {
+      throw new Error(
+        'Notebook has not been saved yet. Please save the notebook first.'
+      );
+    }
     const memeCurrent = {
       current: resp.meme.current
     };
@@ -164,6 +169,10 @@ export const NotebookTag: React.FC<Props> = ({
         })
         .catch((error: any) => {
           console.error('Failed to get content', error);
+          if (!onError) {
+            return;
+          }
+          onError(error);
         });
     },
     [getContent, onError]
@@ -222,9 +231,6 @@ export const NotebookTag: React.FC<Props> = ({
   }, [memeLoader, path, onError]);
 
   if (!visible) {
-    return null;
-  }
-  if (!meme?.current) {
     return null;
   }
   return (

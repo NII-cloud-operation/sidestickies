@@ -23,7 +23,8 @@ class ScrapboxAPI(BaseAPI):
     def __init__(self, **kwargs):
         super(ScrapboxAPI, self).__init__(**kwargs)
 
-    async def get_summary(self, meme):
+    async def get_summary(self, meme, headings=None):
+        # Note: Scrapbox doesn't support heading search, so we ignore headings parameter
         links = await self._get(meme)
         page_content = None
         related = {'1': [], '2': []}

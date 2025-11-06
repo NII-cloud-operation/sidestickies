@@ -655,7 +655,12 @@
       "padSerializer": "ep_weave/lib/serializer"
     },
     "ep_weave": {
-      "basePath": "${EP_WEAVE_BASE_PATH:/ep_weave}"
+      "basePath": "${EP_WEAVE_BASE_PATH:/ep_weave}",
+      "notebookSearch": {
+        "baseUrl": "http://localhost:8983",
+        "core": "jupyter-cell",
+        "jupyterBaseUrl": "${JUPYTERHUB_SERVICE_PREFIX:/tree}"
+      }
     }
   }
   

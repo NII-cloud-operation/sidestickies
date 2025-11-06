@@ -23,15 +23,21 @@ class TagsHandler(BaseHandler):
     @web.authenticated
     async def get(self, target, meme):
         self.log.info('Tags: {}, {}'.format(target, meme))
-        summary, page_content, related = await self._get_tag_info(meme)
+        # Get optional headings parameter
+        headings = self.get_query_argument('headings', default=None)
+        if headings:
+            headings = json.loads(headings)
+            self.log.info('Headings: {}'.format(headings))
+
+        summary, page_content, related = await self._get_tag_info(meme, headings)
         if summary is None:
             meme, _ = parse_cell_id(meme)
-            summary, page_content, related = await self._get_tag_info(meme)
+            summary, page_content, related = await self._get_tag_info(meme, headings)
         await self.finish(dict(meme=meme, page=page_content, related_pages=related,
                                summary=summary))
 
-    async def _get_tag_info(self, meme):
-        r = await self._api.get_summary(meme)
+    async def _get_tag_info(self, meme, headings=None):
+        r = await self._api.get_summary(meme, headings=headings)
         if r is None:
             return None, None, None
         return r['summary'], r.get('page_content', None), r.get('related', None)
@@ -98,6 +104,16 @@ class NotebookMemeHandler(BaseHandler):
             if cell['source'].startswith('#'):
                 toc.append(cell['source'].split('\n')[0])
         self.finish(dict(meme=meme, toc=toc, path=path))
+
+
+class ConfigHandler(BaseHandler):
+    @web.authenticated
+    def get(self):
+        sidestickies_api = self._api
+        backend_api = sidestickies_api._api
+        api_type = backend_api.__class__.__name__
+        ep_weave_url = getattr(backend_api, 'url', None)
+        self.finish({'api_type': api_type, 'ep_weave_url': ep_weave_url})
 
 
 def parse_cell_id(cell_id):

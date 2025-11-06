@@ -5,6 +5,7 @@ import { TaggedComment } from '../components/types';
 export class BaseTagLoader implements ITagLoader {
   private queue: {
     meme: string;
+    headings?: string[];
     resolve: (result: TaggedComment) => void;
     reject: (reason: any) => void;
   }[] = [];
@@ -12,10 +13,11 @@ export class BaseTagLoader implements ITagLoader {
 
   constructor(private type: 'cell' | 'notebook') {}
 
-  async load(meme: string) {
+  async load(meme: string, headings?: string[]) {
     return new Promise<TaggedComment>((resolve, reject) => {
       this.queue.push({
         meme,
+        headings,
         resolve,
         reject
       });
@@ -37,7 +39,7 @@ export class BaseTagLoader implements ITagLoader {
     if (!next) {
       throw new Error('Unexpected error');
     }
-    const { meme, resolve, reject } = next;
+    const { meme, headings, resolve, reject } = next;
     const nextFetcher = () => {
       if (this.queue.length === 0) {
         this.hasFetcher = false;
@@ -47,7 +49,16 @@ export class BaseTagLoader implements ITagLoader {
         this.requestFetcher();
       }, 0);
     };
-    requestAPI<TaggedComment>(`${this.type}/${meme}`)
+
+    // Build URL with optional headings parameter
+    let url = `${this.type}/${meme}`;
+    if (headings && headings.length > 0) {
+      const params = new URLSearchParams();
+      params.append('headings', JSON.stringify(headings));
+      url += '?' + params.toString();
+    }
+
+    requestAPI<TaggedComment>(url)
       .then(result => {
         resolve(result);
         nextFetcher();

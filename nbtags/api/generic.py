@@ -12,10 +12,10 @@ class SidestickiesAPI(BaseAPI):
 
     def __init__(self, **kwargs):
         super(SidestickiesAPI, self).__init__(**kwargs)
-    
-    async def get_summary(self, meme):
-        self.log.info(f'retrieve summary for {meme}')
-        return await self._api.get_summary(meme)
+
+    async def get_summary(self, meme, headings=None):
+        self.log.info(f'retrieve summary for {meme}, headings: {headings}')
+        return await self._api.get_summary(meme, headings=headings)
 
     def get_default_content(self, cell):
         self.log.info(f'get default content for {cell}')
@@ -24,7 +24,7 @@ class SidestickiesAPI(BaseAPI):
     def get_create_url(self, title, body, max_content_length=1024):
         self.log.info(f'get create URL for {title}')
         return self._api.get_create_url(title, body, max_content_length)
-    
+
     @property
     def _api(self):
         if self._api_cache is not None:
