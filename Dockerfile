@@ -44,7 +44,7 @@ RUN mkdir -p /opt/minio/bin/ && \
 RUN pip install --no-cache jupyter_nbextensions_configurator \
     git+https://github.com/NII-cloud-operation/Jupyter-LC_nblineage.git@feature/lab \
     git+https://github.com/NII-cloud-operation/Jupyter-LC_index.git@feature/lab \
-    git+https://github.com/NII-cloud-operation/nbsearch.git@feature/lab
+    git+https://github.com/NII-cloud-operation/nbsearch.git@main
 
 COPY . /tmp/nbtags
 RUN pip install --no-cache /tmp/nbtags jupyter-server-proxy && \
@@ -129,7 +129,7 @@ RUN jupyter nbclassic-extension install --py --user nbsearch && \
 
 # Create Solr schemas for both ep_weave and nbsearch
 RUN precreate-core pad /tmp/nbtags/example/ep_weave/solr/pad/ && \
-    git clone -b feature/lab https://github.com/NII-cloud-operation/nbsearch.git /tmp/nbsearch-repo && \
+    git clone -b main https://github.com/NII-cloud-operation/nbsearch.git /tmp/nbsearch-repo && \
     precreate-core jupyter-notebook /tmp/nbsearch-repo/solr/jupyter-notebook/ && \
     precreate-core jupyter-cell /tmp/nbsearch-repo/solr/jupyter-cell/ && \
     rm -rf /tmp/nbsearch-repo

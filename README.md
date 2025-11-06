@@ -1,6 +1,6 @@
 # sidestickies - Collaborative Annotation for Jupyter Notebook
 
-[![Release](https://github.com/NII-cloud-operation/sidestickies/actions/workflows/release.yml/badge.svg)](https://github.com/NII-cloud-operation/sidestickies/actions/workflows/release.yml) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NII-cloud-operation/sidestickies/feature/lab?urlpath=lab)
+[![Release](https://github.com/NII-cloud-operation/sidestickies/actions/workflows/release.yml/badge.svg)](https://github.com/NII-cloud-operation/sidestickies/actions/workflows/release.yml) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/NII-cloud-operation/sidestickies/main?urlpath=lab)
 
 Sidestickies Jupyter Extension
 
