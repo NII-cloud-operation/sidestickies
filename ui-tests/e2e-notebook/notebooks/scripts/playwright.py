@@ -25,6 +25,7 @@ context_close_on_fail = True
 temp_dir = None
 default_delay = None
 console_messages = []
+test_execution_counter = 0
 
 
 async def run_pw(
@@ -69,10 +70,17 @@ async def run_pw(
         }))
         current_pages.append(page)
 
+    global test_execution_counter
+    test_execution_counter += 1
+
     current_time = time.time()
     print(f"Start epoch: {current_time} seconds")
     if permissions is not None:
         await current_context.grant_permissions(permissions)
+
+    # Test console.log capture
+    await current_pages[-1].evaluate(f'console.log("[TEST-PLAYWRIGHT] counter={test_execution_counter}, timestamp={current_time}, url=" + window.location.href)')
+
     next_page = None
     if f is not None:
         try:
@@ -140,6 +148,7 @@ async def init_pw_context(close_on_fail=True, last_path=None, delay=None):
     global current_contexts
     global default_delay
     global console_messages
+    global test_execution_counter
     if current_browser is not None:
         await current_browser.close()
         current_browser = None
@@ -155,6 +164,7 @@ async def init_pw_context(close_on_fail=True, last_path=None, delay=None):
     context_close_on_fail = close_on_fail
     default_delay = delay
     console_messages = []
+    test_execution_counter = 0
     if current_contexts is not None:
         for current_context in current_contexts:
             await current_context.close()
