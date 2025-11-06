@@ -46,9 +46,11 @@ export class CellTagWidget extends ReactWidget {
   };
 
   private updatePage = (title: string | undefined) => {
+    console.log('[sidestickies] updatePage called, title:', title);
     const url = getBaseUrl('cell');
     this.getContent()
       .then(content => {
+        console.log('[sidestickies] getContent resolved, opening window');
         const cellurl =
           url +
           '?title=' +
@@ -58,7 +60,9 @@ export class CellTagWidget extends ReactWidget {
           'cell' +
           '=' +
           encodeURIComponent(content);
+        console.log('[sidestickies] calling window.open with:', cellurl);
         window.open(cellurl);
+        console.log('[sidestickies] window.open returned');
       })
       .catch((error: any) => {
         console.error('Failed to get content', error);
