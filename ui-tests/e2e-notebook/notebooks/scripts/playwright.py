@@ -88,6 +88,12 @@ async def run_pw(
                 await _save_screenshot()
             raise
     if next_page is not None:
+        next_page.on("console", lambda msg: console_messages.append({
+            "timestamp": time.time(),
+            "url": next_page.url,
+            "type": msg.type,
+            "text": msg.text
+        }))
         current_pages.append(next_page)
     screenshot_path = os.path.join(temp_dir, "screenshot.png")
     await current_pages[-1].screenshot(path=screenshot_path)
