@@ -58,16 +58,21 @@ export const Tag: React.FC<Props> = ({
 
   const openExistingComment = useCallback(
     (target: Summary | SummaryOption | null) => {
+      console.log('[sidestickies] openExistingComment called', { target });
       if (!target) {
+        console.log('[sidestickies] target is null, calling onUpdate(undefined)');
         if (onUpdate) {
           onUpdate(undefined);
         }
         return;
       }
+      console.log('[sidestickies] target.has_code:', target.has_code, 'target.page_url:', target.page_url);
       if (target.has_code && target.page_url) {
+        console.log('[sidestickies] Opening window directly:', target.page_url);
         window.open(target.page_url);
         return;
       }
+      console.log('[sidestickies] Calling onUpdate with title:', 'title' in target ? target.title : undefined);
       if (onUpdate) {
         if ('title' in target) {
           onUpdate(target.title);
