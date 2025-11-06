@@ -24,6 +24,7 @@ default_last_path = None
 context_close_on_fail = True
 temp_dir = None
 default_delay = None
+console_messages = []
 
 
 async def run_pw(
@@ -59,7 +60,14 @@ async def run_pw(
 
     current_context, current_pages = current_contexts[-1]
     if len(current_pages) == 0 or new_page:
-        current_pages.append(await current_context.new_page())
+        page = await current_context.new_page()
+        page.on("console", lambda msg: console_messages.append({
+            "timestamp": time.time(),
+            "url": page.url,
+            "type": msg.type,
+            "text": msg.text
+        }))
+        current_pages.append(page)
 
     current_time = time.time()
     print(f"Start epoch: {current_time} seconds")
@@ -125,6 +133,7 @@ async def init_pw_context(close_on_fail=True, last_path=None, delay=None):
     global context_close_on_fail
     global current_contexts
     global default_delay
+    global console_messages
     if current_browser is not None:
         await current_browser.close()
         current_browser = None
@@ -139,6 +148,7 @@ async def init_pw_context(close_on_fail=True, last_path=None, delay=None):
     temp_dir = tempfile.mkdtemp()
     context_close_on_fail = close_on_fail
     default_delay = delay
+    console_messages = []
     if current_contexts is not None:
         for current_context in current_contexts:
             await current_context.close()
@@ -178,6 +188,15 @@ async def _save_screenshot(last_path=None):
     )
     shutil.copyfile(screenshot_path, dest_screenshot_path)
     print(f"Screenshot: {dest_screenshot_path}")
+
+    # Save console logs
+    console_log_path = os.path.join(
+        last_path or default_last_path, "console.log"
+    )
+    with open(console_log_path, "w") as f:
+        for msg in console_messages:
+            f.write(f"{msg['timestamp']:.3f} {msg['url']} [{msg['type']}] {msg['text']}\n")
+    print(f"Console log: {console_log_path}")
 
 
 async def _finish_pw_context(screenshot=False, last_path=None):
