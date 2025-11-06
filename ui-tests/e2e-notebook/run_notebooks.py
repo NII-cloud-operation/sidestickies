@@ -60,52 +60,58 @@ def main() -> int:
         print("No notebooks to execute. Add notebooks under ui-tests/e2e-notebook/notebooks.")
         return 0
 
-    failures: list[Path] = []
+    failures: list[tuple[Path, str]] = []
+    browser_types = ["chromium", "firefox"]
 
     for notebook in notebooks:
-        result_notebook = RESULT_ROOT / f"{notebook.stem}-result.ipynb"
         notebook_dir = notebook.parent
-        notebook_artifact_dir = RESULT_ROOT / notebook.stem
-        notebook_artifact_dir.mkdir(parents=True, exist_ok=True)
 
-        # Clean up sidestickies-tmp directory in container before each test
-        container_name = os.getenv("SIDESTICKIES_CONTAINER_NAME", "sidestickies-test")
-        subprocess.run(
-            ["docker", "exec", container_name, "rm", "-rf", "/home/jovyan/sidestickies-tmp"]
-        )
-        print(f"Cleaned up sidestickies-tmp in container {container_name}")
+        for browser_type in browser_types:
+            result_notebook = RESULT_ROOT / f"{notebook.stem}-{browser_type}-result.ipynb"
+            notebook_artifact_dir = RESULT_ROOT / f"{notebook.stem}_{browser_type}"
+            notebook_artifact_dir.mkdir(parents=True, exist_ok=True)
 
-        print(f"Running notebook: {notebook} -> {result_notebook}")
-        parameters = {"default_result_path": str(notebook_artifact_dir)}
-        if transition_timeout is not None:
-            parameters["transition_timeout"] = transition_timeout
-        if default_delay is not None:
-            parameters["default_delay"] = default_delay
-
-        jupyterlab_url = os.getenv("JUPYTERLAB_URL")
-        if jupyterlab_url:
-            parameters["jupyterlab_url"] = jupyterlab_url
-
-        notebook7_url = os.getenv("NOTEBOOK7_URL")
-        if notebook7_url:
-            parameters["notebook7_url"] = notebook7_url
-        try:
-            pm.execute_notebook(
-                str(notebook),
-                str(result_notebook),
-                parameters=parameters,
-                cwd=str(notebook_dir),
+            # Clean up sidestickies-tmp directory in container before each test
+            container_name = os.getenv("SIDESTICKIES_CONTAINER_NAME", "sidestickies-test")
+            subprocess.run(
+                ["docker", "exec", container_name, "rm", "-rf", "/home/jovyan/sidestickies-tmp"]
             )
-        except PapermillExecutionError as err:
-            failures.append(notebook)
-            if not args.skip_failed_test:
-                raise
-            print(f"Notebook failed but continuing: {notebook} (reason: {err})")
+            print(f"Cleaned up sidestickies-tmp in container {container_name}")
+
+            print(f"Running notebook: {notebook} ({browser_type}) -> {result_notebook}")
+            parameters = {
+                "default_result_path": str(notebook_artifact_dir),
+                "browser_type": browser_type,
+            }
+            if transition_timeout is not None:
+                parameters["transition_timeout"] = transition_timeout
+            if default_delay is not None:
+                parameters["default_delay"] = default_delay
+
+            jupyterlab_url = os.getenv("JUPYTERLAB_URL")
+            if jupyterlab_url:
+                parameters["jupyterlab_url"] = jupyterlab_url
+
+            notebook7_url = os.getenv("NOTEBOOK7_URL")
+            if notebook7_url:
+                parameters["notebook7_url"] = notebook7_url
+            try:
+                pm.execute_notebook(
+                    str(notebook),
+                    str(result_notebook),
+                    parameters=parameters,
+                    cwd=str(notebook_dir),
+                )
+            except PapermillExecutionError as err:
+                failures.append((notebook, browser_type))
+                if not args.skip_failed_test:
+                    raise
+                print(f"Notebook failed but continuing: {notebook} ({browser_type}) (reason: {err})")
 
     if failures:
         print("Failed notebooks:")
-        for failed in failures:
-            print(f"  - {failed}")
+        for notebook, browser_type in failures:
+            print(f"  - {notebook} ({browser_type})")
         return 1
 
     return 0
