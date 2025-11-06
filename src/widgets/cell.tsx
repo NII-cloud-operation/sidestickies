@@ -34,14 +34,18 @@ export class CellTagWidget extends ReactWidget {
   };
 
   private createPage = () => {
+    console.log('[sidestickies] createPage called');
     const url = getBaseUrl('cell');
     this.getContent()
       .then(content => {
+        console.log('[sidestickies] createPage: getContent resolved, opening window');
         const cellurl = url + '?' + 'cell' + '=' + encodeURIComponent(content);
-        window.open(cellurl);
+        console.log('[sidestickies] createPage: calling window.open with:', cellurl);
+        const result = window.open(cellurl);
+        console.log('[sidestickies] createPage: window.open returned:', result);
       })
       .catch((error: any) => {
-        console.error('Failed to get content', error);
+        console.error('[sidestickies] createPage: Failed to get content', error);
       });
   };
 
