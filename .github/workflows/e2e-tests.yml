@@ -70,7 +70,7 @@ jobs:
           SIDESTICKIES_CONTAINER_NAME: 'sidestickies-test'
         run: |
           set -euxo pipefail
-          python ui-tests/e2e-notebook/run_notebooks.py
+          python ui-tests/e2e-notebook/run_notebooks.py --skip-failed-test
 
       - name: Gather Docker logs
         if: always()

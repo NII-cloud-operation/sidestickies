@@ -19,11 +19,14 @@ from playwright.async_api import async_playwright, expect
 playwright = None
 current_session_id = None
 current_browser = None
+current_browser_type = None
 current_contexts = None
 default_last_path = None
 context_close_on_fail = True
 temp_dir = None
 default_delay = None
+console_messages = []
+test_execution_counter = 0
 
 
 async def run_pw(
@@ -35,11 +38,19 @@ async def run_pw(
     new_page=False,
 ):
     global current_browser
+    global current_browser_type
     if current_browser is None:
-        current_browser = await playwright.chromium.launch(
-            headless=True,
-            args=["--no-sandbox", "--disable-dev-shm-usage", "--lang=ja"],
-        )
+        browser_type = current_browser_type or 'chromium'
+        if browser_type == 'firefox':
+            current_browser = await playwright.firefox.launch(
+                headless=True,
+                args=[],
+            )
+        else:
+            current_browser = await playwright.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-dev-shm-usage", "--lang=ja"],
+            )
 
     global current_contexts
     if current_contexts is None or len(current_contexts) == 0 or new_context:
@@ -59,12 +70,26 @@ async def run_pw(
 
     current_context, current_pages = current_contexts[-1]
     if len(current_pages) == 0 or new_page:
-        current_pages.append(await current_context.new_page())
+        page = await current_context.new_page()
+        page.on("console", lambda msg: console_messages.append({
+            "timestamp": time.time(),
+            "url": page.url,
+            "type": msg.type,
+            "text": msg.text
+        }))
+        current_pages.append(page)
+
+    global test_execution_counter
+    test_execution_counter += 1
 
     current_time = time.time()
     print(f"Start epoch: {current_time} seconds")
     if permissions is not None:
         await current_context.grant_permissions(permissions)
+
+    # Test console.log capture
+    await current_pages[-1].evaluate(f'console.log("[TEST-PLAYWRIGHT] counter={test_execution_counter}, timestamp={current_time}, url=" + window.location.href)')
+
     next_page = None
     if f is not None:
         try:
@@ -80,6 +105,12 @@ async def run_pw(
                 await _save_screenshot()
             raise
     if next_page is not None:
+        next_page.on("console", lambda msg: console_messages.append({
+            "timestamp": time.time(),
+            "url": next_page.url,
+            "type": msg.type,
+            "text": msg.text
+        }))
         current_pages.append(next_page)
     screenshot_path = os.path.join(temp_dir, "screenshot.png")
     await current_pages[-1].screenshot(path=screenshot_path)
@@ -116,15 +147,18 @@ async def close_latest_page(last_path=None):
     await current_context.close()
 
 
-async def init_pw_context(close_on_fail=True, last_path=None, delay=None):
+async def init_pw_context(close_on_fail=True, last_path=None, delay=None, browser_type='chromium'):
     global playwright
     global current_session_id
     global default_last_path
     global current_browser
+    global current_browser_type
     global temp_dir
     global context_close_on_fail
     global current_contexts
     global default_delay
+    global console_messages
+    global test_execution_counter
     if current_browser is not None:
         await current_browser.close()
         current_browser = None
@@ -138,7 +172,10 @@ async def init_pw_context(close_on_fail=True, last_path=None, delay=None):
     )
     temp_dir = tempfile.mkdtemp()
     context_close_on_fail = close_on_fail
+    current_browser_type = browser_type
     default_delay = delay
+    console_messages = []
+    test_execution_counter = 0
     if current_contexts is not None:
         for current_context in current_contexts:
             await current_context.close()
@@ -178,6 +215,15 @@ async def _save_screenshot(last_path=None):
     )
     shutil.copyfile(screenshot_path, dest_screenshot_path)
     print(f"Screenshot: {dest_screenshot_path}")
+
+    # Save console logs
+    console_log_path = os.path.join(
+        last_path or default_last_path, "console.log"
+    )
+    with open(console_log_path, "w") as f:
+        for msg in console_messages:
+            f.write(f"{msg['timestamp']:.3f} {msg['url']} [{msg['type']}] {msg['text']}\n")
+    print(f"Console log: {console_log_path}")
 
 
 async def _finish_pw_context(screenshot=False, last_path=None):
@@ -220,6 +266,16 @@ async def _finish_pw_context(screenshot=False, last_path=None):
         print(f"HAR: {dest_har_path}")
     else:
         print(".harファイルの取得に失敗しました。", file=sys.stderr)
+
+    # Save console logs (always, not just on screenshot)
+    console_log_path = os.path.join(
+        last_path or default_last_path, "console.log"
+    )
+    with open(console_log_path, "w") as f:
+        for msg in console_messages:
+            f.write(f"{msg['timestamp']:.3f} {msg['url']} [{msg['type']}] {msg['text']}\n")
+    print(f"Console log: {console_log_path}")
+
     shutil.rmtree(temp_dir)
     for page in current_pages:
         await page.close()
