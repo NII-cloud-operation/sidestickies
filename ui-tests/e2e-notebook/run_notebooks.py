@@ -16,6 +16,14 @@ NOTEBOOK_ROOT = Path(__file__).resolve().parent / "notebooks"
 ARTIFACT_ROOT = Path(__file__).resolve().parent / "artifacts"
 RESULT_ROOT = ARTIFACT_ROOT / "notebooks"
 
+# Exclude specific notebook + browser combinations from testing.
+# Format: (notebook_stem, browser_type)
+EXCLUDED_TESTS: set[tuple[str, str]] = {
+    # Popup event times out in Chromium headless (works fine in Firefox).
+    # Possibly related: https://github.com/microsoft/playwright/issues/33703
+    ("02_Basic_Test_Notebook7", "chromium"),
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Execute notebook E2E tests.")
@@ -67,6 +75,10 @@ def main() -> int:
         notebook_dir = notebook.parent
 
         for browser_type in browser_types:
+            if (notebook.stem, browser_type) in EXCLUDED_TESTS:
+                print(f"Skipping excluded test: {notebook.name} ({browser_type})")
+                continue
+
             result_notebook = RESULT_ROOT / f"{notebook.stem}-{browser_type}-result.ipynb"
             notebook_artifact_dir = RESULT_ROOT / f"{notebook.stem}_{browser_type}"
             notebook_artifact_dir.mkdir(parents=True, exist_ok=True)

@@ -30,8 +30,8 @@ export class CellExtension
     panel: NotebookPanel,
     context: DocumentRegistry.IContext<INotebookModel>
   ): void | IDisposable {
-    // Keep track of initialized cells
-    const initializedCells = new Set<string>();
+    // Keep track of initialized cells with their type
+    const initializedCells = new Map<string, string>(); // cellId -> cellType
 
     panel.content.model?.cells.changed.connect((_, change) => {
       if (change.type === 'add') {
@@ -44,20 +44,26 @@ export class CellExtension
             if (!isAttached) {
               return;
             }
-            // Only initialize once per cell
-            if (initializedCells.has(cellModel.id)) {
+            // Check if cell is already initialized with the same type
+            const initializedType = initializedCells.get(cellModel.id);
+            if (initializedType === cellModel.type) {
               return;
             }
             if (!panel.content.model) {
               throw new Error('No notebook model');
             }
             initCell(panel.content.model, cell as Cell, this.loader);
-            initializedCells.add(cellModel.id);
+            initializedCells.set(cellModel.id, cellModel.type);
             // If it's a markdown cell, add heading interceptor
             if (cellModel.type === 'markdown') {
               this.initMarkdownHeadingInterceptor(panel, cell as MarkdownCell);
             }
           });
+        });
+      }
+      if (change.type === 'remove') {
+        change.oldValues.forEach(cellModel => {
+          initializedCells.delete(cellModel.id);
         });
       }
     });

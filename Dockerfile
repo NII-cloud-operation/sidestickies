@@ -1,6 +1,6 @@
 FROM solr:8 AS solr
 
-FROM quay.io/jupyter/scipy-notebook:notebook-7.4.5
+FROM quay.io/jupyter/scipy-notebook:notebook-7.5.0
 
 USER root
 
