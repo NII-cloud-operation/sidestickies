@@ -46,17 +46,10 @@ $ jupyter nblineage quick-setup
 
 ## Install sidestickies
 
-To use sidestickies, you should enable both serverextension and nbextension.
-
 ```
 pip install git+https://github.com/NII-cloud-operation/sidestickies.git
 jupyter server extension enable nbtags
 jupyter labextension enable nbtags
-
-# If you want to use the extension with the classic notebook,
-# you need to install and enable the nbclassic notebook extension.
-jupyter nbclassic-extension install --py --sys-prefix nbtags
-jupyter nbclassic-extension enable --py --sys-prefix nbtags
 ```
 
 ## Configure sidestickies

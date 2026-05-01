@@ -1,9 +1,0 @@
-Type: Jupyter Notebook Extension
-Name: Sidestickies for file tree
-Section: tree
-Description: "Sticky Note for Jupyter Notebook"
-Link: README.md
-Icon: tree.png
-Main: tree.js
-# 1.x means nbclassic - leave 6.x in place just in case.
-Compatibility: 1.x 6.x

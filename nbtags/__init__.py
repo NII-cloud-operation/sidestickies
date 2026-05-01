@@ -9,20 +9,6 @@ except ImportError:
     warnings.warn("Importing 'nbtags' outside a proper installation.")
     __version__ = "dev"
 
-# nbextension
-def _jupyter_nbextension_paths():
-    notebook_ext = dict(
-        section='notebook',
-        src='nbextension',
-        dest='nbtags',
-        require='nbtags/main')
-    tree_ext = dict(
-        section='tree',
-        src='nbextension',
-        dest='nbtags',
-        require='nbtags/tree')
-    return [notebook_ext, tree_ext]
-
 # server extension
 def _jupyter_server_extension_paths():
     return [dict(
