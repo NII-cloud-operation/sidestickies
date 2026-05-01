@@ -4,6 +4,9 @@ FROM quay.io/jupyter/scipy-notebook:notebook-7.5.0
 
 USER root
 
+### Remove nbclassic (we use Notebook 7; nbclassic ships unmaintained bundled JS)
+RUN mamba remove -n base -y nbclassic && mamba clean --all -f -y
+
 # Install Node.js 20.x (required for Etherpad build)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
@@ -41,9 +44,9 @@ RUN mkdir -p /opt/minio/bin/ && \
     curl -L https://dl.min.io/server/minio/release/linux-amd64/minio > /opt/minio/bin/minio && \
     chmod +x /opt/minio/bin/minio && mkdir -p /var/minio && chown jovyan:users -R /var/minio
 
-RUN pip install --no-cache jupyter_nbextensions_configurator \
-    git+https://github.com/NII-cloud-operation/Jupyter-LC_nblineage.git@feature/lab \
-    git+https://github.com/NII-cloud-operation/Jupyter-LC_index.git@feature/lab \
+RUN pip install --no-cache \
+    git+https://github.com/NII-cloud-operation/Jupyter-LC_nblineage.git@main \
+    git+https://github.com/NII-cloud-operation/Jupyter-LC_index.git@main \
     git+https://github.com/NII-cloud-operation/nbsearch.git@main
 
 COPY . /tmp/nbtags
@@ -114,18 +117,7 @@ RUN cp -fr /tmp/nbtags/example/notebooks/* /home/$NB_USER/ && \
     cp /tmp/nbtags/images/* /home/$NB_USER/images/ && \
     cp /tmp/nbtags/README.md /home/$NB_USER/
 
-RUN jupyter nbclassic-extension install --py jupyter_nbextensions_configurator --user && \
-    jupyter nbclassic-extension enable --py jupyter_nbextensions_configurator --user && \
-    jupyter nbclassic-serverextension enable --py jupyter_nbextensions_configurator --user && \
-    jupyter nbclassic-extension install --py --user nbtags && \
-    jupyter nbclassic-serverextension enable --py --user nbtags && \
-    jupyter nbclassic-extension enable --py --user nbtags && \
-    jupyter nblineage quick-setup --user
-
-# Enable nbsearch extensions
-RUN jupyter nbclassic-extension install --py --user nbsearch && \
-    jupyter nbclassic-serverextension enable --py --user nbsearch && \
-    jupyter nbclassic-extension enable --py --user nbsearch
+RUN jupyter nblineage quick-setup --user
 
 # Create Solr schemas for both ep_weave and nbsearch
 RUN precreate-core pad /tmp/nbtags/example/ep_weave/solr/pad/ && \

@@ -39,6 +39,7 @@ exclude = [".github", "binder"]
 [tool.hatch.build.targets.wheel.shared-data]
 "nbtags/labextension" = "share/jupyter/labextensions/sidestickies"
 "install.json" = "share/jupyter/labextensions/sidestickies/install.json"
+"jupyter-config/server-config/nbtags.json" = "etc/jupyter/jupyter_server_config.d/nbtags.json"
 
 [tool.hatch.build.hooks.version]
 path = "nbtags/_version.py"
