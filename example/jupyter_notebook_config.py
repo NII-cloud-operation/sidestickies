@@ -21,7 +21,7 @@ Upstream http localhost:8983
 c.ServerProxy.servers = {
   'ep_weave': {
     'command': lambda port: ['/opt/nbtags/bin/run-ep-proxy.sh', f'{port}'],
-    'absolute_url': False,
+    'absolute_url': True,
     'timeout': 30,
   },
   'solr': {
